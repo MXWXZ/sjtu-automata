@@ -33,6 +33,12 @@ Jaccount 登陆&选课协议分析
 - 存在未注销session则由Jaccount接入平台执行注销操作，并且两次302到`http://electsys.sjtu.edu.cn/edu/logerror.aspx?message=xxx`显示错误页面。
 - 正常请求则跳转到Jaccount认证
 
+## 主界面
+地址：[GET] `http://electsys.sjtu.edu.cn/edu/student/sdtMain.aspx`\
+返回：登陆后主界面
+- 需要包含登陆cookie，否则302跳转回`http://electsys.sjtu.edu.cn/edu/`
+
+
 ### 阅读声明
 地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?xklc=1/2/3`\
 参数：

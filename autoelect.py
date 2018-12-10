@@ -1,62 +1,70 @@
 import getopt
 import sys
+import click
+from click import echo, secho
 
-from protocol import *
+from sjtu_automata import *
+
+__author__ = 'MXWXZ'
+
+
+def echoinfo(msg):
+    secho('[Info] ', fg='green', nl=False)
+    echo(msg)
+
+
+def echowarning(msg):
+    secho('[Warning] ', fg='yellow', nl=False)
+    echo(msg)
 
 
 class UserInterface:
-    def __init__(self):
-        self.xklc = 1    # 1 for 1st(INVALID), 2 for 2nd, 3 for 3rd
+    def __init__(self, useocr,cookie, round=2):
         self.session = None  # login session
-
-    def ShowHelp(self):
-        print('Usage: python autoelect.py [-OPTIONS]\n')
-        print('  -h, --help     show this help')
-        print('  -r, --rob      2nd elect')
-        print('      --fish     3rd elect')
-
-    def SolveParam(self, argv):
-        if not argv:
-            print(
-                'Usage: python autoelect.py [-OPTIONS]\nUse "python autoelect.py -h" for help.')
-            exit()
-        try:
-            opts, argvs = getopt.getopt(argv, 'hr', ['help', 'rob', 'fish'])
-        except getopt.GetoptError:
-            print('Invalid param!\nUse "python autoelect.py -h" for help.')
-            exit(1)
-
-        for opt, arg in opts:
-            if opt in ('-h', '--help'):
-                self.ShowHelp()
-                exit()
-            elif opt in ('-r', '--rob'):
-                self.xklc = 2
-            elif opt == '--fish':
-                self.xklc = 3
-
-        # check
-        if self.xklc == 1:
-            print('Please select mode(-r/--fish)!')
-            exit()
+        self.useocr = useocr # true for use ocr
+        self.cookie = cookie # true to print cookie
+        self.round = round   # 1 for 1st, 2 for 2nd, 3 for 3rd
 
     def Login(self):
-        self.session = Login()
+        self.session = Login(
+            'http://electsys.sjtu.edu.cn/edu/login.aspx', self.useocr)
+        if self.cookie:
+            echoinfo('Your cookie:')
+            echo(('; '.join(['='.join(item) for item in self.session.cookies.items()])).replace('"',''))
 
     def CheckAvailable(self):
-        return CheckAvailable(self.session, self.xklc)
+        return CheckAvailable(self.session, self.round)
 
 
-def main():
-    try:
-        ui = UserInterface()
-        ui.SolveParam(sys.argv[1:])
-        ui.Login()
-        print(ui.CheckAvailable())
-    except:
-        print('Network Error! Try again!')
-        exit()
+def GetVersion():
+    with open('Version', 'r') as f:
+        return f.read()
+
+
+def PrintVersion(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    echo('AutoElect by '+__author__)
+    echo('Version: '+GetVersion())
+    ctx.exit()
+
+
+@click.command(context_settings=dict(help_option_names=['-h', '--help']))
+@click.option('-v', '--version', is_flag=True, callback=PrintVersion,
+              expose_value=False, is_eager=True)
+@click.option('-o', '--ocr', is_flag=True, help='use OCR to auto fill captcha')
+@click.option('--print-cookie', is_flag=True, help='print the cookie for advanced use')
+@click.option('-r', '--round', default='2', type=click.Choice(['1', '2', '3']), help='elect round, default is 2')
+def cli(ocr, print_cookie,round):
+    echo('AutoElect by '+__author__)
+    echo('Version: '+GetVersion())
+    echowarning(
+        'Only one session was permitted at the same time. Do NOT login on other browsers!')
+    echoinfo('Login to your JAccount:')
+    ui = UserInterface(ocr,print_cookie, round)
+    ui.Login()
+    print(ui.CheckAvailable())
 
 
 if __name__ == '__main__':
-    main()
+    cli()

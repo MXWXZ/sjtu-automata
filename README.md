@@ -1,5 +1,5 @@
 # AutoElect
-![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg)![Language](https://img.shields.io/badge/Language-Python3-red.svg)![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
+![Version](https://img.shields.io/badge/Version-0.1.0-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
 
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
@@ -23,16 +23,14 @@ Linux > Windows >> ~~macOS=0（没钱无测试）~~
 
 ## 安装
     
-    pip3 install colorama requests Pillow click
+    pip3 install colorama requests Pillow click pytesseract
     git clone https://github.com/MXWXZ/AutoElect.git
     cd AutoElect
 
 ### [可选]验证码自动识别
-可以不装，但是需要图形界面支持或者可以打开`captcha.jpeg`验证码图片：
+Windows可以不装，Linux如无图形界面且无法通过其他方式打开`captcha.jpeg`文件需要安装。\
+**未安装则每抢成功一门课都需要手动登陆，如需抢多个课则不能实现无人值守！**
 
-    pip3 install pytesseract
-
-然后安装`tesseract`，不同系统方法不同：\
 Ubuntu 18.04：
 
     sudo apt install tesseract-ocr libtesseract-dev
@@ -49,9 +47,3 @@ Ubuntu 18.04：
 |:--:|:--:|:--:|
 
 ## 高级用法
-
-## 一些说明
-1. 为了尽量减少第三方库的使用，本脚本并未集成且也不会集成验证码识别的功能
-
-## 二次开发
-1. 安全考虑，任何二次开发不允许自行询问或保存Jaccount用户名/密码，需要登陆请调用`Login`函数

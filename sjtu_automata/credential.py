@@ -1,5 +1,4 @@
 import re
-from getpass import getpass
 import requests
 from requests.adapters import HTTPAdapter
 from PIL import Image
@@ -10,21 +9,18 @@ Call this function to login
 Captcha picture will be stored in code.png
 
 @param      url: direct login url
+@param      username: login username
+@param      password: login password
 @param      useocr=False: True to use ocr to autofill captcha
-@return     login session, None for error
-
-For security reasons, we will NOT ask or save for your name or password on other places
+@return     login session, None for wrong login
 '''
 
 
-def Login(url, useocr=False):
+def Login(url, username, password, useocr=False):
     session = requests.Session()
     session.mount('http://', HTTPAdapter(max_retries=3))
     session.mount('https://', HTTPAdapter(max_retries=3))
     # session.verify=False    WARNING! Only use it in Debug mode!
-
-    username = input('Username: ')
-    password = getpass('Password(no echo): ')
 
     # get page
     while True:
@@ -66,11 +62,8 @@ def Login(url, useocr=False):
             if not useocr:
                 print('Wrong captcha! Try again!')
         elif '请正确填写你的用户名和密码' in request.text or 'wrong username or password' in request.text:
-            print('Wrong username or password! Try again!')
-            username = input('Username: ')
-            password = getpass('Password(no echo): ')
+            return None
         elif 'frame src="../newsboard/newsinside.aspx"':
-            print(request.text)
             print('Login successful!')
             return session
         else:

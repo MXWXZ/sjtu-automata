@@ -27,7 +27,8 @@ Jaccount 登陆&选课协议分析
 - Cookie有效期为会话级
 
 ## Electsys
-**由于选课系统设计极其SB，API参数通用性很低，部分参数为薛定谔参数。故本文档所列内容为一般情况下，单次实验中出现频率较高的，比较重要的参数，如有遗漏请告知。**
+- **由于选课系统设计极其SB，API参数通用性很低，部分参数为薛定谔的参数。故本文档所列内容为一般情况下，单次实验中出现频率较高的，比较重要的参数，如有遗漏请告知。自动化处理最好通过解析返回网页action属性获取参数。**
+- **由于ASP存在`__EVENTVALIDATION`验证，因此可能无法通过直接向接口提交绕过部分操作，故AutoElect采用全程模拟的方法进行。**
 
 ### 登陆
 地址：[GET] `http://electsys.sjtu.edu.cn/edu/login.aspx`\
@@ -68,31 +69,25 @@ POST返回：
 新生研讨课：TODO: 非新生待完善
 
 #### 课程安排POST
-必修课POST参数：
+通用POST参数：
 - `__VIEWSTATE`：ASPX参数
 - `__VIEWSTATEGENERATOR`：ASPX参数
 - `__EVENTVALIDATION`：ASPX参数
 - `myradiogroup`：课号
+
+必修课POST参数：
 - `SpeltyRequiredCourse1%24lessonArrange`：固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`（课程安排）
 
 限选/通识POST参数：
 - `__EVENTTARGET`：ASPX参数
 - `__EVENTARGUMENT`：ASPX参数
 - `__LASTFOCUS`：ASPX参数
-- `__VIEWSTATE`：ASPX参数
-- `__VIEWSTATEGENERATOR`：ASPX参数
-- `__EVENTVALIDATION`：ASPX参数
 - `gridModule%24ctl02%24radioButton`：固定值`radioButton`
-- `myradiogroup`：课号
 - `lessonArrange`：固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`（课程安排）
 
 任选课POST参数：
-- `__VIEWSTATE`：ASPX参数
-- `__VIEWSTATEGENERATOR`：ASPX参数
-- `__EVENTVALIDATION`：ASPX参数
 - `OutSpeltyEP1$dpYx`：固定值`01000`
 - `OutSpeltyEP1$dpNj`：年级届数
-- `myradiogroup`：课号
 - `OutSpeltyEP1$lessonArrange`：固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`（课程安排）
 
 GET返回：

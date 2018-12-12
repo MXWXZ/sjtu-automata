@@ -23,7 +23,7 @@ Linux > Windows >> ~~macOS=0（没钱无测试）~~
 
 ## 安装
     
-    pip3 install colorama requests Pillow click pytesseract
+    pip3 install colorama requests Pillow click pytesseract tenacity
     git clone https://github.com/MXWXZ/AutoElect.git
     cd AutoElect
 
@@ -38,7 +38,7 @@ Ubuntu 18.04：
 其他版本/发行版/Windows等自行看文档：https://github.com/tesseract-ocr/tesseract/wiki
     
 ## 简单使用说明
-**注意：教务网限制同一时间只允许有一个session登陆，即如果您正在使用本程序，请不要在网页或其他地方再次登陆教务网，否则将导致登陆失效，选课失败（喜欢折腾的可以参考高级用法规避）。**
+**注意：虽然经过测试网页先登录再打开软件似乎没有问题，但是如果您希望本程序正常运行，尽量不要在网页或其他地方再次登陆教务网，否则可能导致登陆失效，选课失败（喜欢折腾的可以参考高级用法完美规避）。**
 
 ## 参数说明
 使用：`python3 autoelect.py [-OPTIONS]`
@@ -47,3 +47,7 @@ Ubuntu 18.04：
 |:--:|:--:|:--:|
 
 ## 高级用法
+
+## FAQ
+1. 出现错误`Unhandled response! Retrying...`\
+一般这种情况都是教务网卡了，如果较长时间一直出现，请重新运行脚本，如果问题依旧，请提交issue。

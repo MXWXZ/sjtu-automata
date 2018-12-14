@@ -1,25 +1,36 @@
 # Protocol analysis
 Jaccount 登陆&选课协议分析
 
+注：参数中所有中文实际传输均需要UrlEncode
+
 ## Jaccount认证
 ### 登录界面
 地址：[GET] `http://jaccount.sjtu.edu.cn/jaccount/jalogin?sid=xxx9&returl=xxx&se=xxx`\
-参数：`sid` `returl` `se`猜测为接入单位的密钥和识别码，`returl`为登陆后的返回地址，有CSRF防护为加密数据\
-返回：登录界面
+参数：
+- `sid`：验证参数
+- `returl`：登陆后的返回地址，CSRF防护
+- `se`：验证参数
+
+返回：
+- 登录界面
 
 地址：[GET] `https://jaccount.sjtu.edu.cn/jaccount/captcha?xxx`\
-参数：时间戳+随机数\
-返回：验证码图片（每次访问会刷新！）
+参数：
+- 时间戳+随机数
+
+返回：
+- 验证码图片（每次访问会刷新！）
 
 ### 认证
 地址：[POST] `https://jaccount.sjtu.edu.cn/jaccount/ulogin`\
 参数：
-- `sid`: 登录界面中的sid
-- `returl`: 登录界面中的returl
-- `se`: 登录界面中的se
-- `user`: 登陆用户名
-- `pass`: 密码
-- `captcha`: 验证码
+- `sid`：登录界面中的sid
+- `returl`：登录界面中的returl
+- `se`：登录界面中的se
+- `user`：登陆用户名
+- `pass`：密码
+- `captcha`：验证码
+- `v`：空
 
 返回：
 - 用户名/密码/验证码错误302登录界面且出现错误提示
@@ -27,8 +38,8 @@ Jaccount 登陆&选课协议分析
 - Cookie有效期为会话级
 
 ## Electsys
-- **由于选课系统设计极其SB，API参数通用性很低，部分参数为薛定谔的参数。故本文档所列内容为一般情况下，单次实验中出现频率较高的，比较重要的参数，如有遗漏请告知。自动化处理最好通过解析返回网页action属性获取参数。**
-- **由于ASP存在`__EVENTVALIDATION`验证，因此可能无法通过直接向接口提交绕过部分操作，故AutoElect采用全程模拟的方法进行。**
+- **由于选课系统设计极其SB，API参数通用性很低，部分参数含义未知。故本文档所列内容为一般情况下的参数，如有遗漏请告知。自动化处理最好通过解析返回网页action属性获取参数。**
+- **由于ASP存在`__EVENTVALIDATION`验证，选课必须严格按照顺序走，缺漏步骤或者少/错参数（即使是一个）均有可能导致选课失败或出现不可预料结果，故AutoElect将尽可能按照参数严格进行。**
 
 ### 登陆
 地址：[GET] `http://electsys.sjtu.edu.cn/edu/login.aspx`\
@@ -43,7 +54,7 @@ Jaccount 登陆&选课协议分析
 
 
 ### 阅读声明
-地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?xklc=1/2/3`\
+地址：[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?xklc=1/2/3`\
 GET参数：
 - `xklc`：1为海选，2为抢选，3为第三轮
 
@@ -52,95 +63,190 @@ POST参数：
 - `__VIEWSTATEGENERATOR`：ASPX参数
 - `__EVENTVALIDATION`：ASPX参数
 - `CheckBox1`：on为选中“我已阅读”
-- `btnContinue`：固定值`%E7%BB%A7%E7%BB%AD`（继续）
-
-GET返回：
-- 阅读声明界面
+- `btnContinue`：定值`继续`
 
 POST返回：
 - 选课时间未到返回错误页面`http://electsys.sjtu.edu.cn/edu/messagePage.aspx?message=xxx`
 - 选课时间到进入选课页面
 
-### 课程列表
-必修课地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/speltyRequiredCourse.aspx`\
-限选课地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/speltyLimitedCourse.aspx`\
-通识课地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/speltyCommonCourse.aspx`\
-任选课地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/outSpeltyEP.aspx`\
-新生研讨课：TODO: 非新生待完善
+### 选课界面地址
+- 必修课地址（默认）：`http://electsys.sjtu.edu.cn/edu/student/elect/speltyRequiredCourse.aspx`
+- 选修课地址：`http://electsys.sjtu.edu.cn/edu/student/elect/speltyLimitedCourse.aspx `
+- 通识课地址：`http://electsys.sjtu.edu.cn/edu/student/elect/speltyCommonCourse.aspx`
+- 任选课地址：`http://electsys.sjtu.edu.cn/edu/student/elect/outSpeltyEP.aspx`
 
-#### 课程安排POST
-通用POST参数：
+### 主界面跳转
+地址：[POST] `当前界面地址`\
+参数：
+- `__VIEWSTATE`：ASPX参数
+- `__VIEWSTATEGENERATOR`：ASPX参数
+- `__EVENTVALIDATION`：ASPX参数
+
+// 下面是3个没有协作没有review的码农的做法，大家不要学习\
+- 从必修跳转到其他需附加（转到哪就加那个）：
+    - `SpeltyRequiredCourse1$btnXxk`：定值`限选课`
+    - `SpeltyRequiredCourse1$btnTxk`：定值`通识课`
+    - `SpeltyRequiredCourse1$btnXuanXk`：定值`任选课`
+    - `SpeltyRequiredCourse1$btnYtk`：定值`新生研讨课`
+
+- 从选修/通识跳转到其他需附加；
+    - `btnBxk`：定值`必修课`
+    - `btnXxk`：定值`限选课`
+    - `btnTxk`：定值`通识课`
+    - `btnXuanXk`：定值`任选课`
+    - `btnYtk`：定值`新生研讨课`
+
+    和以下三项：
+    - `__EVENTARGUMENT`：空
+    - `__LASTFOCUS`：空
+    - `__EVENTTARGET`：空
+
+- 从任选跳转到其他需附加：
+  - `OutSpeltyEP1$btnBxk`：定值`必修课`
+  - `OutSpeltyEP1$btnXuanXk`：定值`限选课`
+  - `OutSpeltyEP1$btnTxk`：定值`通识课`
+  - `OutSpeltyEP1$btnYtk`：定值`新生研讨课`
+
+返回：
+- 跳转到其他页面
+
+### 选修/通识/任选课打开二级菜单
+地址：[POST] `当前界面地址`\
+参数：
+- `__VIEWSTATE`：ASPX参数
+- `__VIEWSTATEGENERATOR`：ASPX参数
+- `__EVENTVALIDATION`：ASPX参数
+
+- 选修/通识附加：
+  - `__EVENTARGUMENT`：空
+  - `__LASTFOCUS`：空
+  - `__EVENTTARGET`：单选按钮编号，从`02`开始。选修为`gridModule$ctl02$radioButton`，必修为`gridGModule$ctl02$radioButton`
+  - `上面的单选按钮编号`：定值`radioButton`
+
+- 任选附加：
+  - `OutSpeltyEP1$btnQuery`：定值`查 询`
+  - `OutSpeltyEP1$dpNj`：届数
+  - `OutSpeltyEP1$dpYx`：部门编号
+
+返回：
+- 科目的二级菜单
+
+### 课程安排
+地址：[POST] `当前界面地址`\
+参数：
 - `__VIEWSTATE`：ASPX参数
 - `__VIEWSTATEGENERATOR`：ASPX参数
 - `__EVENTVALIDATION`：ASPX参数
 - `myradiogroup`：课号
 
-必修课POST参数：
-- `SpeltyRequiredCourse1%24lessonArrange`：固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`（课程安排）
+必修课附加：
+`SpeltyRequiredCourse1$lessonArrange`：定值`课程安排`
 
-限选/通识POST参数：
-- `__EVENTTARGET`：ASPX参数
-- `__EVENTARGUMENT`：ASPX参数
-- `__LASTFOCUS`：ASPX参数
-- `gridModule%24ctl02%24radioButton`：固定值`radioButton`
-- `lessonArrange`：固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`（课程安排）
+选修/通识课附加：
+- `__EVENTARGUMENT`：空
+- `__LASTFOCUS`：空
+- `__EVENTTARGET`：空
+- `二级菜单选按钮编号`：定值`radioButton`
+- `lessonArrange`：定值`课程安排`
 
-任选课POST参数：
-- `OutSpeltyEP1$dpYx`：固定值`01000`
-- `OutSpeltyEP1$dpNj`：年级届数
-- `OutSpeltyEP1$lessonArrange`：固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`（课程安排）
-
-GET返回：
-- 课程列表
-
-POST返回：
-- 均302跳转到课程安排查询界面
-
-#### 选课提交POST
-参数：
-- 相应课程安排的除课号、固定值`radioButton`、固定值`%E8%AF%BE%E7%A8%8B%E5%AE%89%E6%8E%92`外的POST参数
-- `btnSubmit`/`OutSpeltyEP1$btnSubmit`：固定值`%E9%80%89%E8%AF%BE%E6%8F%90%E4%BA%A4`（选课提交）
+任选课附加：
+- `OutSpeltyEP1$lessonArrange`：定值`课程安排`
+- `OutSpeltyEP1$dpNj`：届数
+- `OutSpeltyEP1$dpYx`：部门编号
 
 返回：
-- 302跳转到选课提交
+- 课程的科目安排
 
+### 选定老师
+地址：[POST]`http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrange.aspx?xxx`\
+GET参数（吔屎吧你）：
+- `kcdm`：课号
+- `xklx`：定值`必修`/`限选`/`通识`/`通选`
+- `redirectForm`：定值`speltyRequiredCourse.aspx`/`speltyLimitedCourse.aspx`/`speltyCommonCourse.aspx`/`outSpeltyEp.aspx`
 
-### 课程安排查询
-地址：[GET]/[POST] `http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrange.aspx?kcdm=xxx&xklx=xxx&redirectForm=xxx&yxdm=&nj=xxx&kcmk=xxx&txkmk=xxx&tskmk=xxx`\
-GET参数：
-- `kcdm`：课号，如`AV001`
-- `xklx`：选课类型，`%e5%bf%85%e4%bf%ae`（必修） `%e9%99%90%e9%80%89`（限选） `%e9%80%9a%e8%af%86`（通识） `%e9%80%9a%e9%80%89`（通选/任选）
-- `redirectForm`：相应课程列表的页面文件，如`speltyRequiredCourse.aspx`
-- `yxdm`：未知参数，必修无此项，限选/通识为空，任选为`01000`（只测试了几个）
-- `nj`：年级届数，如`1926`
-- `kcmk`：未知参数，必修/通识/任选为`-1`，限选为`h1904%20%20%20%20%20`（未广泛测试，不确定，似乎写`-1`也没问题）
-- `txkmk`：未知参数，为固定值`-1`
-- `tskmk`：仅通识课存在此项，810为人文学科，820为社会科学，830为自然科学，840为工程科学与技术
+必修附加：
+- `nj`：届数
+- `kcmk`：未知参数，定值`-1`
+- `txkmk`：未知参数，定值`-1`
 
-GET返回：
-- 课程安排，教师列表
+选修附加：
+- `yxdm`：空
+- `kcmk`：定值`h1904     `（存疑）
+- `txkmk`：未知参数，定值`-1`
+
+通识附加：
+- `yxdm`：空
+- `nj`：定值`无`（存疑）
+- `kcmk`：未知参数，定值`-1`
+- `tskmk`：`810`为人文学科；`820`社会科学；`830`自然科学；`840`工程科学与技术
+
+任选附加：
+- `yxdm`：部门编号
+- `nj`：届数
+- `kcmk`：未知参数，定值`-1`
+- `txkmk`：未知参数，定值`-1`
 
 POST参数：
 - `__VIEWSTATE`：ASPX参数
 - `__VIEWSTATEGENERATOR`：ASPX参数
 - `__EVENTVALIDATION`：ASPX参数
-- `myradiogroup`：6位数字，推测为教师编号
-- `LessonTime1$btnChoose`：固定值`%E9%80%89%E5%AE%9A%E6%AD%A4%E6%95%99%E5%B8%88`（选定此教师）
-
-POST返回：
-- 302跳转到课程列表界面
-- POST提交即选定此教师
-
-### 选课提交
-地址：[GET] `http://electsys.sjtu.edu.cn/edu/student/elect/electSubmit.aspx?redirectForm=speltyCommonCourse.aspx&yxdm=xxx&nj=xxx&kcmk=xxx&tskmk=xxx`
-
-参数：
-- `redirectForm`：提交之前所在的课程列表页面文件，如`speltyRequiredCourse.aspx`
-- `yxdm`：同课程安排查询参数
-- `nj`：同课程安排查询参数
-- `kcmk`：同课程安排查询参数
-- `tskmk`：同课程安排查询参数
+- `LessonTime1$btnChoose`：定值`选定此教师`
+- `myradiogroup`：课程教师编号
 
 返回：
-- 选课成功界面
-- 自动登出系统（服务端登出，无法拦截）
+- 当前类型主页面
+
+### 提交选课
+地址：[POST] `当前界面地址?xxx`\
+GET参数：
+
+必修附加：
+- `yxdm`：空
+- `nj`：届数
+- `kcmk`：未知参数，定值`-1`
+- `txkmk`：未知参数：定值`-1`
+- `tskmk`：空
+
+选修附加：
+- `yxdm`：空
+- `nj`：届数
+- `kcmk`：定值`h1904     `（存疑）
+- `txkmk`：未知参数，定值`-1`
+- `tskmk`：空
+
+通识附加：
+- `yxdm`：空
+- `nj`：定值`无`（存疑）
+- `kcmk`：未知参数，定值`-1`
+- `txkmk`：空
+- `tskmk`：`810`为人文学科；`820`社会科学；`830`自然科学；`840`工程科学与技术
+
+任选附加：
+- `yxdm`：部门编号
+- `nj`：届数
+- `kcmk`：未知参数，定值`-1`
+- `txkmk`：未知参数，定值`-1`
+- `tskmk`：空
+
+POST参数：
+- `__VIEWSTATE`：ASPX参数
+- `__VIEWSTATEGENERATOR`：ASPX参数
+- `__EVENTVALIDATION`：ASPX参数
+
+必修课附加：
+- `SpeltyRequiredCourse1$Button1`：`选课提交`
+
+选修/通识课附加：
+- `__EVENTARGUMENT`：空
+- `__LASTFOCUS`：空
+- `__EVENTTARGET`：空
+- `btnSubmit`：定值`选课提交`
+
+任选课附加：
+- `OutSpeltyEP1$btnSubmit`：定值`选课提交`
+- `OutSpeltyEP1$dpNj`：届数
+- `OutSpeltyEP1$dpYx`：定值`01000`
+
+返回：
+- 选课成功结果
+- 服务端登出，无法拦截，需要重新登录（间隔至少10s，否则会Ban 30s）

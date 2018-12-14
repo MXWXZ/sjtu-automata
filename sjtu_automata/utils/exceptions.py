@@ -12,13 +12,7 @@ class ParamError(AutomataError):
     Param not correct.
     """
 
-
-class PageLoadError(AutomataError, RequestException):
-    """
-    Loaded page is not expected.
-    """
-
-class UnhandledStateError(AutomataError, RequestException):
+class UnhandledStateError(AutomataError):
     """
     Unhandled page state.
     """

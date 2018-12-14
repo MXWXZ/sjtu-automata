@@ -1,5 +1,5 @@
 import re
-from sjtu_automata.utils.exceptions import PageLoadError
+from sjtu_automata.utils.exceptions import RetryRequest
 
 
 def re_search(retext, text):
@@ -34,7 +34,7 @@ def get_aspxparam(text):
         dict, 3 params and values.
 
     Raises:
-        PageLoadError: cant find at least one of aspx param in page text.
+        RetryRequest: cant find at least one of aspx param in page text.
     """
     ret = {}
     ret['__VIEWSTATE'] = re_search(r'id="__VIEWSTATE" value="(.*?)"', text)
@@ -44,5 +44,5 @@ def get_aspxparam(text):
         r'id="__EVENTVALIDATION" value="(.*?)"', text)
     for key, value in ret.items():
         if not value:
-            raise PageLoadError
+            raise RetryRequest
     return ret

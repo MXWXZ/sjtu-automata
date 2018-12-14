@@ -8,7 +8,7 @@ from tenacity import retry, retry_if_exception_type, wait_fixed
 
 from sjtu_automata.autocaptcha import autocaptcha
 from sjtu_automata.utils import re_search
-from sjtu_automata.utils.exceptions import (PageLoadError, RetryRequest,
+from sjtu_automata.utils.exceptions import (RetryRequest,
                                             UnhandledStateError)
 
 
@@ -28,7 +28,7 @@ def _get_login_page(session, url):
     if '<form id="form-input" method="post" action="ulogin">' in req.text:
         return req.text
     else:
-        raise PageLoadError  # make it retry
+        raise RetryRequest  # make it retry
 
 
 @retry(retry=retry_if_exception_type(RequestException), wait=wait_fixed(3))
@@ -54,7 +54,7 @@ def _bypass_captcha(session, url, useocr):
 def _login(session, sid, returl, se, username, password, code):
     # return 0 suc, 1 wrong credential, 2 code error, 3 30s ban
     data = {'sid': sid, 'returl': returl, 'se': se, 'user': username,
-            'pass': password, 'captcha': code}
+            'pass': password, 'captcha': code,'v':''}
     req = session.post(
         'https://jaccount.sjtu.edu.cn/jaccount/ulogin', data=data)
 
@@ -92,7 +92,7 @@ def login(url, username, password, useocr=False):
 
     captcha_id = re_search(r'src="captcha\?([0-9]*)"', req)
     if not captcha_id:
-        raise PageLoadError
+        raise RetryRequest
     url = 'https://jaccount.sjtu.edu.cn/jaccount/captcha?'+captcha_id
     code = _bypass_captcha(session, url, useocr)
 
@@ -100,7 +100,7 @@ def login(url, username, password, useocr=False):
     returl = re_search(r'returl" value="(.*?)"', req)
     se = re_search(r'se" value="(.*?)"', req)
     if not (sid and returl and se):
-        raise PageLoadError
+        raise RetryRequest
     res = _login(session, sid, returl, se, username, password, code)
 
     if res == 2:

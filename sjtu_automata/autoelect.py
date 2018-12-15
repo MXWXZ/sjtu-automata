@@ -237,7 +237,7 @@ def shell(ui, cmd):
 
         echo('\n               AutoElect Shell Command')
         echo('back                                      back when in classid')
-        echo('cd [classtype/classgroup/teacherid...]    change directory')
+        echo('cd [classtype/classgroup/classid...]      change directory')
         echo('cookie                                    print cookie')
         echo('elect [teacherid] [delay=15]              elect class')
         echo('help                                      show this message')
@@ -411,7 +411,7 @@ def cli(interact, no_update, round, ocr, print_cookie, delay_elect, delay_login,
     echo('Github: '+__url__+'\n')
 
     # TODO: remove in 1.0.0
-    if not (no_update or check_update()):
+    if not no_update and check_update():
         cmd = input('Continue without updating?(y/N)')
         if cmd != 'y':
             exit()
@@ -449,7 +449,8 @@ def cli(interact, no_update, round, ocr, print_cookie, delay_elect, delay_login,
             shell(ui, cddir)
             shell(ui, 'ls')
         else:
-            raise ParamError('One of -e/-l must exist!')
+            echoerror('One of -e/-l must exist!')
+            exit()
 
 
 if __name__ == '__main__':

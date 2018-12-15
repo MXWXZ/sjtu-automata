@@ -16,7 +16,7 @@ def _create_session():
     session = requests.Session()
     session.mount('http://', HTTPAdapter(max_retries=3))
     session.mount('https://', HTTPAdapter(max_retries=3))
-    session.verify = False    # WARNING! Only use it in Debug mode!
+    # session.verify = False    # WARNING! Only use it in Debug mode!
     return session
 
 

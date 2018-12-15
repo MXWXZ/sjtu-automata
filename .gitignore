@@ -1,3 +1,6 @@
 captcha.jpeg
 __pycache__/
 *.pyc
+/build
+/dist
+/sjtu_automata.egg-info

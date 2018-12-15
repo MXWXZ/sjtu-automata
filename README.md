@@ -8,8 +8,8 @@
 
 ## 使用脚本你可以做到
 :heavy_check_mark: 无人值守自动抢课\
-:heavy_check_mark: 并发抢课提升成功率\
-~~:heavy_check_mark: 卡时间准时抢课（暂不开放）~~
+~~:heavy_check_mark: 并发抢课提升成功率（测试版不支持）\~~
+:heavy_check_mark: 卡时间准时抢课
 
 ## 使用脚本你不能做到
 :x: 违反选课规则选课\
@@ -38,7 +38,7 @@ Ubuntu 18.04：
 其他版本/发行版/Windows等自行看文档：https://github.com/tesseract-ocr/tesseract/wiki
     
 ## 简单使用说明
-**注意：经过测试网页先登录再打开软件可以同时选课。**
+**注意：经过测试网页先登录再打开软件可以同时登陆，但是任何一边提交选课后将会导致所有登陆失效。**
 部分课无法选到
 
 ## 参数说明

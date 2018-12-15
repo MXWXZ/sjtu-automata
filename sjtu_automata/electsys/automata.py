@@ -13,7 +13,7 @@ from sjtu_automata.utils.exceptions import (AutomataError, ParamError,
 
 
 @retry(retry=retry_if_exception_type(RequestException), wait=wait_fixed(3))
-def _request(session, method, url, params=None, data=None):
+def _request(session, method, url, params=None, data=None, verify=True):
     """Request with params.
 
     Easy to use requests and auto retry.
@@ -24,10 +24,11 @@ def _request(session, method, url, params=None, data=None):
         url: string, post url.
         params=None: dict, get param.
         data=None: dict, post param.
+        verify=True: bool, True to verify returned aspxparam
 
     Returns:
         requests request.
-        dict, aspx param.
+        dict, aspx param, None if verify is False.
 
     Raises:
         AutomataError: method param error.
@@ -42,14 +43,17 @@ def _request(session, method, url, params=None, data=None):
         print('Credential expired! Please relogin!')
         exit()
 
-    return req, get_aspxparam(req.text)
+    if verify:
+        return req, get_aspxparam(req.text)
+    else:
+        return req, None
 
 
 def check_round(round):
     # round: int, elect round [1,3]
     if round not in [1, 2, 3]:
         raise ParamError
-    return rounds
+    return round
 
 
 def check_classtype(classtype):
@@ -119,6 +123,7 @@ def _parse_param(text):
 
     ret = html.unescape(ret).replace('%', '\\').encode(
         'utf-8').decode('unicode_escape')
+    ret = ret.replace('+', ' ')    # special for fucking 'h1904     '
     return dict(item.split("=") for item in ret.split("&"))
 
 
@@ -218,6 +223,24 @@ def expend_page(session, classtype, classgroup, data, extdata1=None):
     return req, data
 
 
+def check_class_selected(text, classid):
+    """Check if class is selected.
+
+    Args:
+        text: string, request text.
+        classid: string, elect class id, e.g. AV001.
+
+    Returns:
+        bool, True for selected class. 
+    """
+    res = re.search(
+        r'<input type=radio name=\'myradiogroup\' value='+classid+r'.*?(?:style=")?color(?::)?(?:=")?(.*?)[;"]', text, re.S)
+    if res:
+        return res.group(1) == 'Blue'
+    else:
+        return True     # do not elect if meet error
+
+
 def view_arrange(session, classtype, classgroup, classid, data, extdata1=None):
     """View class arrange page.
 
@@ -257,12 +280,15 @@ def view_arrange(session, classtype, classgroup, classid, data, extdata1=None):
     return req, data, params
 
 
-def check_class_full(text, teacherid):
+def check_class_space(text, teacherid):
     """Check if class is full.
 
     Args:
         text: string, request text.
         teacherid: int, elect teacher id.
+
+    Returns:
+        bool, True for class available 
 
     Raises:
         RetryRequest: not find teacherid.
@@ -277,6 +303,9 @@ def check_class_full(text, teacherid):
 
 def select_teacher(session, teacherid, data, params):
     """Select teacher.
+
+    WARNING! we will not check if this class is full!
+    Please use check_class_full by yourself.
 
     Args:
         session: requests session, login session.
@@ -329,7 +358,7 @@ def submit(session, classtype, data, params, extdata1=None):
         pass_data['OutSpeltyEP1$dpYx'] = '01000'
 
     req, data = _request(session, 'POST', _get_classtype_fullurl(
-        classtype), params=params, data=pass_data)
+        classtype), params=params, data=pass_data, verify=False)
 
     # logout
     if '微调结果' in req.text:

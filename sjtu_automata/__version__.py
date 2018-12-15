@@ -5,5 +5,5 @@ __update_url__ = 'https://raw.githubusercontent.com/MXWXZ/sjtu_automata/master/v
 __version__ = '0.1.0'
 __author__ = 'MXWXZ'
 __author_email__ = 'me@imwxz.com'
-__license__ = 'GPL-3.0'
+__license__ = 'GNU General Public License v3 (GPLv3)'
 __copyright__ = 'Copyright 2018 MXWXZ'

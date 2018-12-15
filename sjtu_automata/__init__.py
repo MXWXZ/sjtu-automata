@@ -5,6 +5,7 @@ from click import echo, secho
 
 from .__version__ import __version__, __update_url__
 
+name = "sjtu_automata"
 
 def echoinfo(msg):
     secho('[Info] ', fg='green', nl=False)

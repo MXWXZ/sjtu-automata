@@ -8,7 +8,7 @@
 
 ## 使用脚本你可以做到
 :heavy_check_mark: 无人值守自动抢课\
-~~:heavy_check_mark: 并发抢课提升成功率（测试版不支持）\~~
+~~:heavy_check_mark: 并发抢课提升成功率（测试版不支持）~~\
 :heavy_check_mark: 卡时间准时抢课
 
 ## 使用脚本你不能做到

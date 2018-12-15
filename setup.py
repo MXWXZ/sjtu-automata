@@ -31,7 +31,7 @@ setuptools.setup(
     python_requires='>=3',
     entry_points={
         'console_scripts': [
-            'autoelect=sjtu_automata.autoelect.__main__:cli',
+            'autoelect=sjtu_automata.autoelect:cli',
         ],
     },
 )

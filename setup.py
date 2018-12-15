@@ -12,7 +12,7 @@ setuptools.setup(
     description=__description__,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    license=__license__
+    license=__license__,
     url=__url__,
     packages=setuptools.find_packages(),
     classifiers=[

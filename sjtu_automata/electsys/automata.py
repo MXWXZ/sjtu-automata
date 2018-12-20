@@ -91,7 +91,7 @@ def check_round_available(session, round):
     req, data = _request(session, 'POST',
                          'http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?xklc=%d' % round, data=data)
 
-    if '目前该轮选课未开放' in req.text or '你目前不能进行该轮选课' in req.text:
+    if '目前该轮选课未开放' in req.text or '你目前不能进行该轮选课' in req.text or '没有被开放选课' in req.text:
         return False, req, None
     elif '推荐课表' in req.text:
         return True, req, data

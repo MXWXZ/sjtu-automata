@@ -36,6 +36,7 @@ def check_update():
         echoinfo('Found new version: '+req.text)
         echowarning(
             'New version found! We strongly recommand you to update to the latest version!')
+        echowarning('Use "pip3 install sjtu-automata --upgrade" to upgrade!')
 
         return True
     else:

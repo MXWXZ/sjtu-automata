@@ -127,6 +127,29 @@ def _parse_param(text):
     return dict(item.split("=") for item in ret.split("&"))
 
 
+def navmainpage(session, data):
+    """go to main page.
+
+    Nav main page, only needed when round is 2!
+
+    Args:
+        session: requests session, login session.
+        round: int, elect round, 1 for 1st, 2 for 2nd, 3 for 3rd.
+        data: dict, post param with aspx param from last request.
+
+    Returns:
+        requests request.
+        dict, aspx param.
+    """
+    pass_data = data
+    pass_data['__EVENTARGUMENT'] = pass_data['__EVENTTARGET'] = ''
+    pass_data['btnBxk'] = '必修课'
+    req, data = _request(
+        session, 'POST', 'http://electsys.sjtu.edu.cn/edu/student/elect/secondRoundFP.aspx', data=pass_data)
+
+    return req, data
+
+
 def navpage(session, old_classtype, new_classtype, data):
     """nav from page to page.
 

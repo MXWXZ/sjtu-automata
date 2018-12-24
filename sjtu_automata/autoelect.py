@@ -15,7 +15,8 @@ from sjtu_automata.electsys.automata import (check_class_space, check_round_avai
                                              expend_page, list_teacher,
                                              navpage, select_teacher, submit,
                                              view_arrange, parse_renxuan, list_classid,
-                                             list_group, check_classtype, check_class_selected)
+                                             list_group, check_classtype, check_class_selected,
+                                             navmainpage)
 from sjtu_automata.utils.exceptions import ParamError
 
 
@@ -167,22 +168,30 @@ class UserInterface(object):
                 break
             else:
                 if delay == 0:
-                    echoerror('Elect round %d is unavailable!'%self.round)
+                    echoerror('Elect round %d is unavailable!' % self.round)
                     exit()
                 else:
                     echoerror('Elect round %d is unavailable! Retry in %ds...' % (
                         self.round, delay))
                     sleep(delay)
 
-    def check_class_selected(self,classid):
-        if not ((self.classtype==1 and self.depth==0) or (self.classtype !=1 and self.depth==1)):
+    def nav_mainpage(self):
+        """Nav to main page.
+
+        Only support for 2nd elect.
+        """
+        echoinfo('Switching to main page...')
+        self.req, self.data = navmainpage(self.session, self.data)
+
+    def check_class_selected(self, classid):
+        if not ((self.classtype == 1 and self.depth == 0) or (self.classtype != 1 and self.depth == 1)):
             echoerror('Please go to the right page!')
             return False
-        ret= check_class_selected(self.req.text,classid)
+        ret = check_class_selected(self.req.text, classid)
         if ret:
-            echoinfo('Class %s is selected!'%classid)
+            echoinfo('Class %s is selected!' % classid)
         else:
-            echoinfo('Class %s is not selected!'%classid)
+            echoinfo('Class %s is not selected!' % classid)
         return ret
 
     def select_teacher(self, teacherid, delay):
@@ -218,7 +227,7 @@ class UserInterface(object):
             self.islogin = False
 
             self.classtype = 1
-            self.session=self.req = self.classgroup = self.classid = self.data = self.params = self.grade = None
+            self.session = self.req = self.classgroup = self.classid = self.data = self.params = self.grade = None
 
             self.depth = 0
             self.tmpreq = self.tmpparams = self.tmpdata = None
@@ -309,6 +318,7 @@ def shell(ui, cmd):
             ui.round = int(cmdlist[1])
             ui.login(cmdlist[2] == '1')
             ui.check_round_available(int(cmdlist[3]))
+            ui.nav_mainpage()
         else:
             show_shell_help(True)
         return True
@@ -427,7 +437,8 @@ def cli(interact, no_update, round, ocr, print_cookie, delay_elect, delay_login,
         if elect:
             for i in elect:
                 if ui.username:
-                    echoinfo('Going for next elect, you must wait 30s for not being banned!')
+                    echoinfo(
+                        'Going for next elect, you must wait 30s for not being banned!')
                     sleep(31)
                 i = i.split('/')
                 cddir = 'cd '+' '.join(i[0:-2])
@@ -439,7 +450,7 @@ def cli(interact, no_update, round, ocr, print_cookie, delay_elect, delay_login,
                     echoinfo('Ignore elect...')
                     continue
                 else:
-                    shell(ui,'cd '+i[-2])
+                    shell(ui, 'cd '+i[-2])
                     shell(ui, 'elect %s %d' % (i[-1], delay_elect))
         elif list_teacher:
             lst = list_teacher.split('/')

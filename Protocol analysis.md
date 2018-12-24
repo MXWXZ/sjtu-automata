@@ -70,10 +70,21 @@ POST返回：
 - 选课时间到进入选课页面
 
 ### 选课界面地址
+- 抢选专用页面：`http://electsys.sjtu.edu.cn/edu/student/elect/secondRoundFP.aspx`
 - 必修课地址（默认）：`http://electsys.sjtu.edu.cn/edu/student/elect/speltyRequiredCourse.aspx`
 - 选修课地址：`http://electsys.sjtu.edu.cn/edu/student/elect/speltyLimitedCourse.aspx `
 - 通识课地址：`http://electsys.sjtu.edu.cn/edu/student/elect/speltyCommonCourse.aspx`
 - 任选课地址：`http://electsys.sjtu.edu.cn/edu/student/elect/outSpeltyEP.aspx`
+
+### 抢选专用页面
+地址：[POST] `http://electsys.sjtu.edu.cn/edu/student/elect/secondRoundFP.aspx`
+参数：
+- `__VIEWSTATE`：ASPX参数
+- `__VIEWSTATEGENERATOR`：ASPX参数
+- `__EVENTVALIDATION`：ASPX参数
+- `__EVENTARGUMENT`：空
+- `__EVENTTARGET`：空
+- `btnBxk`：定值`必修课`
 
 ### 主界面跳转
 地址：[POST] `当前界面地址`\

@@ -364,7 +364,6 @@ def submit(session, classtype, data, params, extdata1=None):
 
     Returns:
         requests request.
-        bool, True for success
     """
     check_classtype(classtype)
     pass_data = data
@@ -383,10 +382,7 @@ def submit(session, classtype, data, params, extdata1=None):
     req, data = _request(session, 'POST', _get_classtype_fullurl(
         classtype), params=params, data=pass_data, verify=False)
 
-    # logout
-    if '微调结果' in req.text:
-        return req, True
-    return req, False
+    return req
 
 
 def list_group(text, classtype):

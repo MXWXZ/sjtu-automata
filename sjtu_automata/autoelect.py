@@ -221,9 +221,9 @@ class UserInterface(object):
     def submit(self):
         if self.classtype != 4:
             self.grade = None
-        req, ret = submit(self.session, self.classtype,
-                          self.data, self.params, self.grade)
-        if ret:
+        req = submit(self.session, self.classtype,
+                     self.data, self.params, self.grade)
+        if self.round == 1:  # 1st elect will logout
             self.islogin = False
 
             self.classtype = 1
@@ -231,10 +231,6 @@ class UserInterface(object):
 
             self.depth = 0
             self.tmpreq = self.tmpparams = self.tmpdata = None
-            return True
-        else:
-            echoerror('Submit error!')
-            exit()
 
 # TODO: more cmd in future
 
@@ -300,13 +296,14 @@ def shell(ui, cmd):
             if ui.select_teacher(int(cmdlist[1]), int(cmdlist[2])):
                 sleep(1)
                 echoinfo('Submitting...(2/2)')
-                if ui.submit():
+                ui.submit()
+                if ui.round == 1:
                     echoinfo('Elect OK~ You are logged out!')
                     echowarning(
                         'Your username and password will be remembered until you quit.')
                 else:
-                    echoerror('Submit error!')
-                    exit()
+                    echoinfo('Elect OK~')
+                    ui.nav_mainpage()
             else:
                 echoerror('Elect needs cd [classid] first!')
         else:
@@ -436,7 +433,7 @@ def cli(interact, no_update, round, ocr, print_cookie, delay_elect, delay_login,
         ui = UserInterface()
         if elect:
             for i in elect:
-                if ui.username:
+                if ui.round == 1 and ui.username:
                     echoinfo(
                         'Going for next elect, you must wait 30s for not being banned!')
                     sleep(31)

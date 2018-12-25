@@ -221,7 +221,7 @@ class UserInterface(object):
     def submit(self):
         if self.classtype != 4:
             self.grade = None
-        req = submit(self.session, self.classtype,
+        self.req,self.data = submit(self.session,self.round, self.classtype,
                      self.data, self.params, self.grade)
         if self.round == 1:  # 1st elect will logout
             self.islogin = False
@@ -231,6 +231,9 @@ class UserInterface(object):
 
             self.depth = 0
             self.tmpreq = self.tmpparams = self.tmpdata = None
+        else:
+            self.classtype = 1
+            self.depth = 0
 
 # TODO: more cmd in future
 

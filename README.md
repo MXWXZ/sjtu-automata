@@ -1,5 +1,5 @@
 # sjtu-automata
-![Version](https://img.shields.io/badge/Version-0.1.3-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
+![Version](https://img.shields.io/badge/Version-0.1.4-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
 
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
@@ -31,7 +31,8 @@ Linux > Windows >> ~~macOS=0（没钱无测试）~~
 
 ### [可选]验证码自动识别
 Windows可以不装，Linux如无图形界面且无法通过其他方式打开`captcha.jpeg`文件需要安装。\
-**未安装则每抢成功一门课都需要手动登陆，如需抢多个课则不能实现无人值守！**
+~~**未安装则每抢成功一门课都需要手动登陆，如需抢多个课则不能实现无人值守！**~~\
+仅针对海选，测试发现抢选提交后不会登出，因此可以实现无人值守。
 
 Ubuntu 18.04：
 

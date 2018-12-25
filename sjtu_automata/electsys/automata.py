@@ -352,11 +352,12 @@ def select_teacher(session, teacherid, data, params):
     return req, data, param
 
 
-def submit(session, classtype, data, params, extdata1=None):
+def submit(session, round, classtype, data, params, extdata1=None):
     """Submit, need to relogin.
 
     Args:
         session: requests session, login session.
+        round: int, elect round, 1 for 1st, 2 for 2nd, 3 for 3rd.
         classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
         data: dict, select_class return post param.
         params: dict, select_class return get param.
@@ -364,6 +365,7 @@ def submit(session, classtype, data, params, extdata1=None):
 
     Returns:
         requests request.
+        dict, post param with aspx param from last request.
     """
     check_classtype(classtype)
     pass_data = data
@@ -379,10 +381,17 @@ def submit(session, classtype, data, params, extdata1=None):
         pass_data['OutSpeltyEP1$dpNj'] = extdata1
         pass_data['OutSpeltyEP1$dpYx'] = '01000'
 
-    req, data = _request(session, 'POST', _get_classtype_fullurl(
+    if round == 1:
+        req, data = _request(session, 'POST', _get_classtype_fullurl(
         classtype), params=params, data=pass_data, verify=False)
-
-    return req
+        # logout
+        if '微调结果' in req.text:
+            return req, None
+        return req, None
+    else:
+        req, data = _request(session, 'POST', _get_classtype_fullurl(
+        classtype), params=params, data=pass_data)
+        return req, data
 
 
 def list_group(text, classtype):

@@ -1,6 +1,5 @@
 import re
-from sjtu_automata.utils.exceptions import RetryRequest
-
+from time import time
 
 def re_search(retext, text):
     """Regular expression search.
@@ -21,28 +20,9 @@ def re_search(retext, text):
     else:
         return None
 
-
-def get_aspxparam(text):
-    """Get aspx view param.
-
-    Split __VIEWSTATE/__VIEWSTATEGENERATOR/__EVENTVALIDATION from text.
-
-    Args:
-        text: string, text want to split.
-
+def get_timestamp():
+    """13 lengths timestamp.
     Returns:
-        dict, 3 params and values.
-
-    Raises:
-        RetryRequest: cant find at least one of aspx param in page text.
+        current timestamp.
     """
-    ret = {}
-    ret['__VIEWSTATE'] = re_search(r'id="__VIEWSTATE" value="(.*?)"', text)
-    ret['__VIEWSTATEGENERATOR'] = re_search(
-        r'id="__VIEWSTATEGENERATOR" value="(.*?)"', text)
-    ret['__EVENTVALIDATION'] = re_search(
-        r'id="__EVENTVALIDATION" value="(.*?)"', text)
-    for key, value in ret.items():
-        if not value:
-            raise RetryRequest
-    return ret
+    return str(round(time() * 1000))

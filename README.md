@@ -4,7 +4,7 @@
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
 上海交通大学抢课脚本\
-协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20analysis.md>
+V2协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20analysis%20v2.md>
 
 ## 使用脚本你可以做到
 :heavy_check_mark: 无人值守自动抢课\

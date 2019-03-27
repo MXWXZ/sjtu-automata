@@ -1,4 +1,6 @@
 from time import sleep
+from time import time
+from getpass import getpass
 
 import requests
 from PIL import Image
@@ -7,9 +9,8 @@ from requests.exceptions import RequestException
 from tenacity import retry, retry_if_exception_type, wait_fixed
 
 from sjtu_automata.autocaptcha import autocaptcha
-from sjtu_automata.utils import re_search
-from sjtu_automata.utils.exceptions import (RetryRequest,
-                                            UnhandledStateError)
+from sjtu_automata.utils import (re_search, get_timestamp)
+from sjtu_automata.utils.exceptions import (RetryRequest, AutomataError)
 
 
 def _create_session():
@@ -51,10 +52,10 @@ def _bypass_captcha(session, url, useocr):
 
 
 @retry(retry=retry_if_exception_type(RequestException), wait=wait_fixed(3))
-def _login(session, sid, returl, se, username, password, code):
+def _login(session, sid, returl, se, client, username, password, code, uuid):
     # return 0 suc, 1 wrong credential, 2 code error, 3 30s ban
-    data = {'sid': sid, 'returl': returl, 'se': se, 'user': username,
-            'pass': password, 'captcha': code,'v':''}
+    data = {'sid': sid, 'returl': returl, 'se': se, 'client': client, 'user': username,
+            'pass': password, 'captcha': code, 'v': '', 'uuid': uuid}
     req = session.post(
         'https://jaccount.sjtu.edu.cn/jaccount/ulogin', data=data)
 
@@ -66,52 +67,64 @@ def _login(session, sid, returl, se, username, password, code):
         return 1
     elif '30秒后' in req.text:  # 30s ban
         return 3
-    elif 'frame src="../newsboard/newsinside.aspx"':
+    elif '<i class="fa fa-gear" aria-hidden="true" id="wdyy_szbtn">':
         return 0
     else:
-        raise UnhandledStateError
+        raise AutomataError
 
 
-@retry(retry=retry_if_exception_type(RequestException), wait=wait_fixed(3))
-def login(url, username, password, useocr=False):
+def login(url, useocr=False):
     """Call this function to login.
 
     Captcha picture will be stored in captcha.jpeg.
+    WARNING: From 0.2.0, username and password will not be allowed to pass as params, all done by this function itself.
 
     Args:
         url: string, direct login url
-        username: string, login username
-        password: string, login password
         useocr=False: bool, True to use ocr to autofill captcha
 
     Returns:
-        requests session, login session, None for wrong login
+        requests login session.
     """
-    session = _create_session()
-    req = _get_login_page(session, url)
+    while True:
+        username = input('Username: ')
+        password = getpass('Password(no echo): ')
 
-    captcha_id = re_search(r'src="captcha\?([0-9]*)"', req)
-    if not captcha_id:
-        raise RetryRequest
-    url = 'https://jaccount.sjtu.edu.cn/jaccount/captcha?'+captcha_id
-    code = _bypass_captcha(session, url, useocr)
+        while True:
+            session = _create_session()
+            req = _get_login_page(session, url)
+            captcha_id = re_search(r'img.src = \'captcha\?(.*)\'', req)
+            if not captcha_id:
+                print('Captcha not found! Retrying...')
+                sleep(3)
+                continue
+            captcha_id += get_timestamp()
+            captcha_url = 'https://jaccount.sjtu.edu.cn/jaccount/captcha?'+captcha_id
+            code = _bypass_captcha(session, captcha_url, useocr)
 
-    sid = re_search(r'sid" value="(.*?)"', req)
-    returl = re_search(r'returl" value="(.*?)"', req)
-    se = re_search(r'se" value="(.*?)"', req)
-    if not (sid and returl and se):
-        raise RetryRequest
-    res = _login(session, sid, returl, se, username, password, code)
+            sid = re_search(r'sid" value="(.*?)"', req)
+            returl = re_search(r'returl" value="(.*?)"', req)
+            se = re_search(r'se" value="(.*?)"', req)
+            client = re_search(r'client" value="(.*?)"', req)
+            uuid = re_search(r'captcha\?uuid=(.*?)&t=', req)
+            if not (sid and returl and se and uuid):
+                print('Params not found! Retrying...')
+                sleep(3)
+                continue
 
-    if res == 2:
-        if not useocr:
-            print('Wrong captcha! Try again!')
-        raise RetryRequest
-    elif res == 1:
-        return None
-    elif res == 3:
-        print('Opps! You are banned for 30s...Waiting...')
-        sleep(30)
-        raise RetryRequest
-    else:
-        return session
+            res = _login(session, sid, returl, se, client,
+                         username, password, code, uuid)
+
+            if res == 2:
+                if not useocr:
+                    print('Wrong captcha! Try again!')
+                continue
+            elif res == 1:
+                print('Wrong username or password! Try again!')
+                break
+            elif res == 3:
+                print('Opps! You are banned for 30s...Waiting...')
+                sleep(30)
+                continue
+            else:
+                return session

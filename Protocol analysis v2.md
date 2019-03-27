@@ -15,9 +15,10 @@ Jaccount 登陆&选课协议分析 V2
 返回：
 - 登录界面
 
-地址：`https://jaccount.sjtu.edu.cn/jaccount/captcha?xxx`\
+地址：`https://jaccount.sjtu.edu.cn/jaccount/captcha?uuid=xxx&t=xxx`\
 参数：
-- 时间戳+随机数
+- `uuid`：随机uuid
+- `t`：时间戳
 
 返回：
 - 验证码图片（每次访问会刷新！）
@@ -33,6 +34,8 @@ Jaccount 登陆&选课协议分析 V2
 - `captcha`：验证码
 - `v`：空
 - `client`：登录界面中的`client`
+- `uuid`：验证码uuid，不可省略
+- `g-recaptcha-response`：reCaptcha参数，可省略
 
 返回：
 - 用户名/密码/验证码错误302登录界面且出现错误提示
@@ -78,7 +81,9 @@ POST参数：\
 地址：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html?gnmkdm=N253512&su=xxx`\
 必须参数（经过测试可以省略的就不写了）：
 - `jxb_ids`：唯一班号，教学班最后一列的6位数字
-- `xkkz_id`：未知ID，似乎是定值，主修`7E0B00F0E0730CA6E0530200A8C0208B`，任选`7E0B00F0E0970CA6E0530200A8C0208B`，通识`7E0B00F0E0B50CA6E0530200A8C0208B`，通选`7E0B00F0E0D10CA6E0530200A8C0208B`
+- `xkkz_id`：未知ID，和选课轮数有关，同一轮，同一课程类型为定值。
+- `njdm_id`：年级ID？推测为届数。
+- `zyh_id`：未知ID。
 
 返回值：
 - `{"flag":"1"}`：选课成功

@@ -1,19 +1,15 @@
-import html
-import re
 from time import sleep
 
 import requests
 from requests.exceptions import RequestException
 from tenacity import retry, retry_if_exception_type, wait_fixed
 
-from sjtu_automata.__version__ import __url__
-from sjtu_automata.utils import get_aspxparam, re_search
-from sjtu_automata.utils.exceptions import (AutomataError, ParamError,
-                                            RetryRequest, UnhandledStateError)
+from sjtu_automata.utils import (re_search, get_timestamp)
+from sjtu_automata.utils.exceptions import AutomataError
 
 
-@retry(retry=retry_if_exception_type(RequestException), wait=wait_fixed(3))
-def _request(session, method, url, params=None, data=None, verify=True):
+@retry(retry=retry_if_exception_type(RequestException), wait=wait_fixed(1))
+def _request(session, method, url, params=None, data=None):
     """Request with params.
 
     Easy to use requests and auto retry.
@@ -24,11 +20,9 @@ def _request(session, method, url, params=None, data=None, verify=True):
         url: string, post url.
         params=None: dict, get param.
         data=None: dict, post param.
-        verify=True: bool, True to verify returned aspxparam
 
     Returns:
         requests request.
-        dict, aspx param, None if verify is False.
 
     Raises:
         AutomataError: method param error.
@@ -37,414 +31,87 @@ def _request(session, method, url, params=None, data=None, verify=True):
         raise AutomataError
 
     req = session.request(method, url, params=params, data=data)
-    if '过载' in req.text:   # retry when overload error
-        raise RetryRequest
-    elif '过期' in req.text:
-        print('Credential expired! Please relogin!')
-        exit()
-
-    if verify:
-        return req, get_aspxparam(req.text)
-    else:
-        return req, None
+    return req.text
 
 
-def check_round(round):
-    # round: int, elect round [1,3]
-    if round not in [1, 2, 3]:
-        raise ParamError
-    return round
+def get_studentid(session):
+    """Get student id.
 
-
-def check_classtype(classtype):
-    # classtype: int, elect class type, [1,4]
-    # TODO: Add classtype 5
-    if classtype not in [1, 2, 3, 4]:
-        raise ParamError
-    return classtype
-
-
-def check_round_available(session, round):
-    """Check elect round available.
-
-    You should always call this after login, and you only need to call it once.
+    Parse student id.
 
     Args:
         session: requests session, login session.
-        round: int, elect round, 1 for 1st, 2 for 2nd, 3 for 3rd.
 
     Returns:
-        bool, True for available.
-        requests request
-        dict, aspx param.
-
-    Raises:
-        UnhandledStateError: unhandled page state.
+        str, student id.
     """
-    check_round(round)
-
-    req, data = _request(
-        session, 'GET', 'http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?xklc=%d' % round)
-    data['CheckBox1'] = 'on'
-    data['btnContinue'] = '继续'
-
-    req, data = _request(session, 'POST',
-                         'http://electsys.sjtu.edu.cn/edu/student/elect/electwarning.aspx?xklc=%d' % round, data=data)
-
-    if '目前该轮选课未开放' in req.text or '你目前不能进行该轮选课' in req.text or '没有被开放选课' in req.text:
-        return False, req, None
-    elif '推荐课表' in req.text:
-        return True, req, data
-    else:
-        raise UnhandledStateError
-
-# TODO: Add XinShengYanTaoKe support
+    params = {'jsdm': '', '_t': get_timestamp()}
+    req = _request(
+        session, 'GET', 'http://i.sjtu.edu.cn/xtgl/index_initMenu.html', params=params)
+    return re_search(r'sessionUserKey" value="(.*?)"', req)
 
 
-def _get_classtype_url(classtype):
-    # classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-    # TODO: Add classtype 5
-    text = ['', 'speltyRequiredCourse.aspx', 'speltyLimitedCourse.aspx',
-            'speltyCommonCourse.aspx', 'outSpeltyEP.aspx', '']
+def get_params(session, studentid):
+    """Get elect params.
 
-    return text[check_classtype(classtype)]
-
-
-def _get_classtype_fullurl(classtype):
-    # classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-    return 'http://electsys.sjtu.edu.cn/edu/student/elect/'+_get_classtype_url(classtype)
-
-
-def _parse_param(text):
-    ret = re_search(r'method="post" action=".*?aspx\?(.*?)"',
-                    text)
-    if not ret:
-        raise ParamError
-
-    ret = html.unescape(ret).replace('%', '\\').encode(
-        'utf-8').decode('unicode_escape')
-    ret = ret.replace('+', ' ')    # special for fucking 'h1904     '
-    return dict(item.split("=") for item in ret.split("&"))
-
-
-def navmainpage(session, data):
-    """go to main page.
-
-    Nav main page, only needed when round is 2!
+    Parse elect params.
 
     Args:
         session: requests session, login session.
-        round: int, elect round, 1 for 1st, 2 for 2nd, 3 for 3rd.
-        data: dict, post param with aspx param from last request.
+        studentid: str, student id.
 
     Returns:
-        requests request.
-        dict, aspx param.
+        dict:
+            xkkz_id: list, [0] is '主修课程', [1] is '通识课', [2] is '通选课'
+            njdm_id: str, njdm_id
+            zyh_id: str, zyh_id
     """
-    pass_data = data
-    pass_data['__EVENTARGUMENT'] = pass_data['__EVENTTARGET'] = ''
-    pass_data['btnBxk'] = '必修课'
-    req, data = _request(
-        session, 'POST', 'http://electsys.sjtu.edu.cn/edu/student/elect/secondRoundFP.aspx', data=pass_data)
+    params = {'gnmkdm': 'N253512', 'layout': 'default', 'su': studentid}
+    req = _request(
+        session, 'GET', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html', params=params)
+    xkkz_id = []
+    xkkz_id.append(re_search(
+        r'\'01\',\'(.*)\'\)" role="tab" data-toggle="tab">', req))
+    xkkz_id.append(re_search(
+        r'\'10\',\'(.*)\'\)" role="tab" data-toggle="tab">', req))
+    xkkz_id.append(re_search(
+        r'\'11\',\'(.*)\'\)" role="tab" data-toggle="tab">', req))
+    njdm_id = re_search(r'id="njdm_id" value="(.*?)"/>', req)
+    zyh_id = re_search(r'id="zyh_id" value="(.*?)"/>', req)
+    return {'xkkz_id': xkkz_id, 'njdm_id': njdm_id, 'zyh_id': zyh_id}
 
-    return req, data
 
+def elect_class(session, studentid, params, classtype, classid):
+    """Elect class.
 
-def navpage(session, old_classtype, new_classtype, data):
-    """nav from page to page.
-
-    Nav page, auto handle diffrent param.
+    Directly elect class.
+    This operation is safe that you dont need to check if you have elected before and so on.
 
     Args:
         session: requests session, login session.
-        old_classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-        new_classtype: int, new elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-        data: dict, post param with aspx param from last request.
+        studentid: str, student id.
+        params: dict, get_params returned
+        classtype: int, 0 is '主修课程', 1 is '通识课', 2 is '通选课'
+        classid: str, class id
 
     Returns:
-        requests request.
-        dict, aspx param.
-
-    Raises:
-        ParamError: old_classtype and new_classtype are same.
+        int, -1 for param error, 0 for success, 1 for time conflict, 2 for full, 3 for param error, 4 for other.
     """
-    if old_classtype == new_classtype:
-        raise ParamError
-    check_classtype(old_classtype)
-    check_classtype(new_classtype)
+    if not (0 <= classtype <= 2):
+        return -1
+    post_params = {'gnmkdm': 'N253512', 'su': studentid}
+    data = {'jxb_ids': classid, 'xkkz_id': params['xkkz_id'][classtype],
+            'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id']}
 
-    # TODO: Add classtype 5
-    text_class = ['', '必修课', '限选课', '通识课', '任选课', '新生研讨课']
-    text_page = [[],
-                 ['', '', 'SpeltyRequiredCourse1$btnXxk', 'SpeltyRequiredCourse1$btnTxk',
-                     'SpeltyRequiredCourse1$btnXuanXk', 'SpeltyRequiredCourse1$btnYtk'],
-                 ['', 'btnBxk', '', 'btnTxk', 'btnXuanXk', 'btnYtk'],
-                 ['', 'btnBxk', 'btnXxk', '', 'btnXuanXk', 'btnYtk'],
-                 ['', 'OutSpeltyEP1$btnBxk', 'OutSpeltyEP1$btnXuanXk',
-                  'OutSpeltyEP1$btnTxk', '', 'OutSpeltyEP1$btnYtk'],
-                 []]
+    req = _request(
+        session, 'POST', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html', params=post_params, data=data)
 
-    pass_data = data
-    pass_data[text_page[old_classtype]
-              [new_classtype]] = text_class[new_classtype]
-    if old_classtype in [2, 3]:
-        pass_data['__EVENTARGUMENT'] = pass_data['__LASTFOCUS'] = pass_data['__EVENTTARGET'] = ''
-
-    req, data = _request(
-        session, 'POST', _get_classtype_fullurl(old_classtype), data=pass_data)
-
-    return req, data
-
-
-def parse_renxuan(text):
-    """Parse RenXuan grade and id.
-
-    Args:
-        text: string, page text
-
-    Returns:
-        string, id.
-        string, grade.
-    """
-    ret = []
-    res = re.finditer(
-        r'selected="selected" value="(.*?)"', text, re.S)
-    for i in res:
-        ret.append(i.group(1))
-    return ret[0], ret[1]
-
-
-def expend_page(session, classtype, classgroup, data, extdata1=None):
-    """expand page.
-
-    Show real class info.
-
-    Args:
-        session: requests session, login session.
-        classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-        classgroup: string, class group string.
-        data: dict, post param with aspx param from last request.
-        extdata1: string, for RenXuan is grade.
-
-    Returns:
-        requests request.
-        dict, aspx param.
-    """
-    check_classtype(classtype)
-    pass_data = data
-    if classtype in [2, 3]:
-        pass_data['__EVENTARGUMENT'] = pass_data['__LASTFOCUS'] = ''
-        pass_data['__EVENTTARGET'] = classgroup
-        pass_data[classgroup] = 'radioButton'
-    if classtype == 4:
-        pass_data['OutSpeltyEP1$btnQuery'] = '查 询'
-        pass_data['OutSpeltyEP1$dpNj'] = extdata1
-        pass_data['OutSpeltyEP1$dpYx'] = classgroup
-
-    req, data = _request(
-        session, 'POST', _get_classtype_fullurl(classtype), data=pass_data)
-    return req, data
-
-
-def check_class_selected(text, classid):
-    """Check if class is selected.
-
-    Args:
-        text: string, request text.
-        classid: string, elect class id, e.g. AV001.
-
-    Returns:
-        bool, True for selected class. 
-    """
-    res = re.search(
-        r'<input type=radio name=\'myradiogroup\' value='+classid+r'.*?(?:style=")?color(?::)?(?:=")?(.*?)[;"]', text, re.S)
-    if res:
-        return res.group(1) == 'Blue'
-    else:
-        return True     # do not elect if meet error
-
-
-def view_arrange(session, classtype, classgroup, classid, data, extdata1=None):
-    """View class arrange page.
-
-    Args:
-        session: requests session, login session.
-        classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-        classgroup: string, class group string.
-        classid: string, elect class id, e.g. AV001.
-        data: dict, post param with aspx param from last request.
-        extdata1: string, for RenXuan is grade.
-
-    Returns:
-        requests request.
-        dict, aspx param.
-        dict, next get param
-    """
-    check_classtype(classtype)
-    pass_data = data
-    pass_data['myradiogroup'] = classid
-    if classtype == 1:
-        pass_data['SpeltyRequiredCourse1$lessonArrange'] = '课程安排'
-    elif classtype in [2, 3]:
-        pass_data['__EVENTARGUMENT'] = ''
-        pass_data['__LASTFOCUS'] = ''
-        pass_data['__EVENTTARGET'] = ''
-        pass_data[classgroup] = 'radioButton'
-        pass_data['lessonArrange'] = '课程安排'
-    elif classtype == 4:
-        pass_data['OutSpeltyEP1$lessonArrange'] = '课程安排'
-        pass_data['OutSpeltyEP1$dpNj'] = extdata1
-        pass_data['OutSpeltyEP1$dpYx'] = classgroup
-
-    req, data = _request(
-        session, 'POST', _get_classtype_fullurl(classtype), data=pass_data)
-    params = _parse_param(req.text)
-
-    return req, data, params
-
-
-def check_class_space(text, teacherid):
-    """Check if class is full.
-
-    Args:
-        text: string, request text.
-        teacherid: int, elect teacher id.
-
-    Returns:
-        bool, True for class available 
-
-    Raises:
-        RetryRequest: not find teacherid.
-    """
-    ret = re.search(
-        r'name=\'myradiogroup\' value='+str(teacherid)+r'.*?(人数.*?)</td>', text, re.S)
-    if ret:
-        return ret.group(1) == '人数未满'
-    else:
-        raise RetryRequest
-
-
-def select_teacher(session, teacherid, data, params):
-    """Select teacher.
-
-    WARNING! we will not check if this class is full!
-    Please use check_class_full by yourself.
-
-    Args:
-        session: requests session, login session.
-        teacherid: int, elect teacher id.
-        data: dict, view_arrange return post param.
-        params: dict, view_arrange return get param.
-
-    Returns:
-        requests request.
-        dict, post param with aspx param from last request.
-        dict, get param from last request.
-    """
-    pass_data = data
-    pass_data['myradiogroup'] = teacherid
-    pass_data['LessonTime1$btnChoose'] = '选定此教师'
-
-    req, data = _request(
-        session, 'POST', 'http://electsys.sjtu.edu.cn/edu/lesson/viewLessonArrange.aspx', params=params, data=pass_data)
-    param = _parse_param(req.text)
-
-    return req, data, param
-
-
-def submit(session, round, classtype, data, params, extdata1=None):
-    """Submit, need to relogin.
-
-    Args:
-        session: requests session, login session.
-        round: int, elect round, 1 for 1st, 2 for 2nd, 3 for 3rd.
-        classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-        data: dict, select_class return post param.
-        params: dict, select_class return get param.
-        extdata1: string, for RenXuan is grade.
-
-    Returns:
-        requests request.
-        dict, post param with aspx param from last request.
-    """
-    check_classtype(classtype)
-    pass_data = data
-    if classtype == 1:
-        pass_data['SpeltyRequiredCourse1$Button1'] = '选课提交'
-    elif classtype in [2, 3]:
-        pass_data['__EVENTARGUMENT'] = ''
-        pass_data['__LASTFOCUS'] = ''
-        pass_data['__EVENTTARGET'] = ''
-        pass_data['btnSubmit'] = '选课提交'
-    elif classtype == 4:
-        pass_data['OutSpeltyEP1$btnSubmit'] = '选课提交'
-        pass_data['OutSpeltyEP1$dpNj'] = extdata1
-        pass_data['OutSpeltyEP1$dpYx'] = '01000'
-
-    if round == 1:
-        req, data = _request(session, 'POST', _get_classtype_fullurl(
-        classtype), params=params, data=pass_data, verify=False)
-        # logout
-        if '微调结果' in req.text:
-            return req, None
-        return req, None
-    else:
-        req, data = _request(session, 'POST', _get_classtype_fullurl(
-        classtype), params=params, data=pass_data)
-        return req, data
-
-
-def list_group(text, classtype):
-    """List class group.
-
-    Args:
-        text: string, request text
-        classtype: int, elect class type, 1 for BiXiu, 2 for XianXuan, 3 for TongShi, 4 for RenXuan, 5 for XinSheng.
-
-    Returns:
-        dict, ret[id]=name
-    """
-    ret = {}
-    if classtype in [2, 3]:
-        res = re.finditer(
-            r'<input id=".*?" type="radio" name="(.*?)" value="radioButton" .*?<td.*?>(.*?)</td>', text, re.S)
-    elif classtype == 4:
-        res = re.finditer(
-            r'<option value="([0-9]{5,}?)">(.*?)</option>', text, re.S)
-    for i in res:
-        ret[i.group(1)] = i.group(2).strip()
-    return ret
-
-
-def list_classid(text):
-    """List classid.
-
-    Args:
-        text: string, request text
-
-    Returns:
-        dict, ret[id]=name
-    """
-    res = re.finditer(
-        r'<input type=radio name=\'myradiogroup\' value=(.*?)>.*?<td.*?>(.*?)</td>', text, re.S)
-    ret = {}
-    for i in res:
-        ret[i.group(1).strip()] = i.group(2).strip()
-    return ret
-
-
-def list_teacher(text):
-    """List class teacher.
-
-    Args:
-        text: string, request text
-
-    Returns:
-        dict, ret[id]=name
-    """
-    res = re.finditer(
-        r'name=\'myradiogroup\' value=([0-9]*?)(?: checked)?>.*?<td.*?>(.*?)</td>', text, re.S)
-    ret = {}
-    for i in res:
-        ret[i.group(1)] = i.group(2)
-    return ret
+    if '{"flag":"1"}' in req:
+        return 0
+    if '所选教学班的上课时间与其他教学班有冲突' in req:
+        return 1
+    if '"flag":"-1"' in req:
+        return 2
+    if '{}' in req:
+        return 3
+    return 4

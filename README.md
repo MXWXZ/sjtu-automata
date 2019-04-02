@@ -1,5 +1,5 @@
 # sjtu-automata
-![Version](https://img.shields.io/badge/Version-0.2.0-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
+![Version](https://img.shields.io/badge/Version-0.2.1-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
 
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
@@ -57,15 +57,15 @@ Ubuntu 18.04：
 ### CLI
 使用：`autoelect [OPTIONS] [CLASSTYPE-CLASSID]`
 
-|参数|长参数形式|说明|
-|:--:|:--:|:--:|
-|-v|--version|显示版本|
-||--no-update|关闭更新检查|
-|-o|--ocr|使用OCR识别验证码|
-||--print-cookie|打印登陆cookie|
-|-d|--delay|两次尝试选课间隔（默认1s）|
-|-n|--number|每个课程的线程数（默认为1）|
-|-h|--help|显示帮助|
+| 参数  |   长参数形式   |            说明             |
+| :---: | :------------: | :-------------------------: |
+|  -v   |   --version    |          显示版本           |
+|       |  --no-update   |        关闭更新检查         |
+|  -o   |     --ocr      |      使用OCR识别验证码      |
+|       | --print-cookie |       打印登陆cookie        |
+|  -d   |    --delay     | 两次尝试选课间隔（默认1s）  |
+|  -n   |    --number    | 每个课程的线程数（默认为1） |
+|  -h   |     --help     |          显示帮助           |
 
 - `CLASSTYPE`和`CLASSID`成对出现，可以出现多对同步进行，但至少有一对
 - `CLASSTYPE`：主修课为0，通识课为1，通选课为2（更多需要请提交issue）

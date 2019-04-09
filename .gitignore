@@ -4,3 +4,4 @@ __pycache__/
 /build
 /dist
 /sjtu_automata.egg-info
+/.vscode

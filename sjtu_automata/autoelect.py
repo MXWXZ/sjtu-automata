@@ -1,8 +1,3 @@
-from sjtu_automata.electsys.automata import (
-    get_studentid, get_params, elect_class)
-from sjtu_automata.credential import login
-from sjtu_automata.__version__ import __author__, __url__, __version__
-from sjtu_automata import check_update, echoerror, echoinfo, echowarning
 import getopt
 import sys
 from time import sleep
@@ -12,7 +7,11 @@ from click import echo, secho
 import threading
 
 sys.path.append('../')
-
+from sjtu_automata.electsys.automata import (
+    get_studentid, get_params, elect_class)
+from sjtu_automata.credential import login
+from sjtu_automata.__version__ import __author__, __url__, __version__
+from sjtu_automata import check_update, echoerror, echoinfo, echowarning
 
 class UserInterface(object):
     def __init__(self):
@@ -53,7 +52,7 @@ class UserInterface(object):
 
         while 1:
             self.params = get_params(self.session, self.studentid)
-            if self.params['xkkz_id'][0] and self.params['xkkz_id'][1] and self.params['xkkz_id'][2] and self.params['njdm_id'] and self.params['zyh_id']:
+            if self.params['njdm_id'] and self.params['zyh_id']:
                 break
             echoinfo('Not open, retry in %d seconds...' % delay)
             sleep(delay)
@@ -61,10 +60,10 @@ class UserInterface(object):
         echoinfo('Login successful!')
         return True
 
-    def __elect_thread(self, tid, classtype, classid, delay):
+    def __elect_thread(self, tid, xkkzid, classid, delay):
         while self.status[tid] == 2 or self.status[tid] == 4 or self.status[tid] == -1:
             ret = elect_class(self.session, self.studentid,
-                              self.params, classtype, classid)
+                              self.params, xkkzid, classid)
             with self.tl[tid]:
                 if self.status[tid] != 0 and self.status[tid] != 1 and self.status[tid] != 3:
                     self.status[tid] = ret
@@ -73,10 +72,10 @@ class UserInterface(object):
                         break
             sleep(delay)
 
-    def add_elect(self, number, classtype, classid, delay):
+    def add_elect(self, number, xkkzid, classid, delay):
         for i in range(number):
             self.tp.append(threading.Thread(
-                target=self.__elect_thread, args=(self.id, classtype, classid, delay,)))
+                target=self.__elect_thread, args=(self.id, xkkzid, classid, delay,)))
         self.tl.append(threading.Lock())
         self.tclass.append(classid)
         self.status.append(-1)
@@ -170,14 +169,15 @@ def cli(no_update, ocr, print_cookie, delay, check_delay, number, classtypeid):
         exit()
 
     ui = UserInterface()
-    ui.login(ocr, check_delay)
+    if not ui.login(ocr, check_delay):
+        exit()
     if print_cookie:
         ui.print_cookie()
     for i in range(0, len(classtypeid), 2):
-        if not (0 <= int(classtypeid[i]) <= 2):
+        if len(classtypeid[i]) != 32:
             echowarning('Class type ' + classtypeid[i] + ' invalid! Ignore.')
             continue
-        ui.add_elect(number, int(classtypeid[i]), classtypeid[i+1], delay)
+        ui.add_elect(number, classtypeid[i], classtypeid[i+1], delay)
     ui.start_elect()
     cmd = threading.Thread(target=ui.get_input)
     cmd.daemon = True

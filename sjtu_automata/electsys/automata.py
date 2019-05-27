@@ -62,26 +62,18 @@ def get_params(session, studentid):
 
     Returns:
         dict:
-            xkkz_id: list, [0] is '主修课程', [1] is '通识课', [2] is '通选课'
             njdm_id: str, njdm_id
             zyh_id: str, zyh_id
     """
     params = {'gnmkdm': 'N253512', 'layout': 'default', 'su': studentid}
     req = _request(
         session, 'GET', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html', params=params)
-    xkkz_id = []
-    xkkz_id.append(re_search(
-        r'\'01\',\'(.*)\'\)" role="tab" data-toggle="tab">', req))
-    xkkz_id.append(re_search(
-        r'\'10\',\'(.*)\'\)" role="tab" data-toggle="tab">', req))
-    xkkz_id.append(re_search(
-        r'\'11\',\'(.*)\'\)" role="tab" data-toggle="tab">', req))
     njdm_id = re_search(r'id="njdm_id" value="(.*?)"/>', req)
     zyh_id = re_search(r'id="zyh_id" value="(.*?)"/>', req)
-    return {'xkkz_id': xkkz_id, 'njdm_id': njdm_id, 'zyh_id': zyh_id}
+    return {'njdm_id': njdm_id, 'zyh_id': zyh_id}
 
 
-def elect_class(session, studentid, params, classtype, classid):
+def elect_class(session, studentid, params, xkkzid, classid):
     """Elect class.
 
     Directly elect class.
@@ -91,16 +83,14 @@ def elect_class(session, studentid, params, classtype, classid):
         session: requests session, login session.
         studentid: str, student id.
         params: dict, get_params returned
-        classtype: int, 0 is '主修课程', 1 is '通识课', 2 is '通选课'
+        xkkzid: str, 32 length id
         classid: str, class id
 
     Returns:
         int, -1 for param error, 0 for success, 1 for time conflict, 2 for full, 3 for param error, 4 for other.
     """
-    if not (0 <= classtype <= 2):
-        return -1
     post_params = {'gnmkdm': 'N253512', 'su': studentid}
-    data = {'jxb_ids': classid, 'xkkz_id': params['xkkz_id'][classtype],
+    data = {'jxb_ids': classid, 'xkkz_id': xkkzid,
             'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id']}
 
     req = _request(

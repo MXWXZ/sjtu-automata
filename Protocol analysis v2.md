@@ -80,7 +80,7 @@ POST参数：\
 #### 选课接口
 地址：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html?gnmkdm=N253512&su=xxx`\
 必须参数（经过测试可以省略的就不写了）：
-- `jxb_ids`：唯一班号，教学班最后一列的6位数字
+- `jxb_ids`：32位课号ID
 - `xkkz_id`：未知ID，和选课轮数有关，同一轮，同一课程类型为定值。
 - `njdm_id`：年级ID？推测为届数。
 - `zyh_id`：未知ID。

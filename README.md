@@ -1,5 +1,5 @@
 # sjtu-automata
-![Version](https://img.shields.io/badge/Version-0.2.1-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
+![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
 
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
@@ -39,11 +39,17 @@ Ubuntu 18.04：
 其他版本/发行版/Windows等自行看文档：https://github.com/tesseract-ocr/tesseract/wiki
     
 ## 简单使用说明
-1. 查看课号：想选的课“教学班”一栏最后6位数字即为唯一课号
-2. 查看课程类型：主修课为0，通识课为1，通选课为2（仅适用于只有这三种课的情况，更多需要请提交issue）
-3. 使用命令选课，例如选择主修课，课号123456，通识课，课号234567，不使用ocr：
+- 由于选课系统再次更新，需要传递的参数改变，因此建议使用油猴脚本获取ID：https://www.tampermonkey.net/
+- 插件安装完成后点击这里进入脚本安装页面：https://github.com/MXWXZ/sjtu-automata/raw/master/sjtu-automata.user.js
+- 下面的教程以安装插件之后为准，如果不安装油猴脚本也可以自行查看网页源码提取相关ID
 
-        autoelect 0 123456 1 234567
+1. 查看课号：想选的课“教学班”第二行的32位字符串即为唯一课号
+2. 查看课程类型：标签页第二行的32位字符串即为课程类型
+3. 使用命令选课，格式为`autoelect [32位课程类型ID] [32位课号ID]`：
+
+        autoelect ABCDEFGHIJKLMNOPQRSTUVWXYZ123456 BCDEFGHIJKLMNOPQRSTUVWXYZ1234567 CDEFGHIJKLMNOPQRSTUVWXYZ12345678 DEFGHIJKLMNOPQRSTUVWXYZ123456789
+
+    上述命令将会选`ABCDEFGHIJKLMNOPQRSTUVWXYZ123456`课程类型下的`BCDEFGHIJKLMNOPQRSTUVWXYZ1234567`课和`CDEFGHIJKLMNOPQRSTUVWXYZ12345678`课程类型下的`DEFGHIJKLMNOPQRSTUVWXYZ123456789`课，如果需要更多可以在后面继续添加。
 
     注：程序运行过程中输入`s`可以查看选课状态
 
@@ -69,5 +75,5 @@ Ubuntu 18.04：
 |  -h   |     --help     |            显示帮助            |
 
 - `CLASSTYPE`和`CLASSID`成对出现，可以出现多对同步进行，但至少有一对
-- `CLASSTYPE`：主修课为0，通识课为1，通选课为2（仅适用于只有这三种课的情况，更多需要请提交issue）
-- `CLASSID`：“教学班”一栏最后6位数字
+- `CLASSTYPE`：32位课程类型ID
+- `CLASSID`：32位课号ID

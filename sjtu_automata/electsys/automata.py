@@ -1,5 +1,6 @@
 from time import sleep
 
+import re
 import requests
 from requests.exceptions import RequestException
 from tenacity import retry, retry_if_exception_type, wait_fixed
@@ -62,18 +63,25 @@ def get_params(session, studentid):
 
     Returns:
         dict:
+            xkkz_id: dict, [cnt]:[id]
             njdm_id: str, njdm_id
             zyh_id: str, zyh_id
     """
     params = {'gnmkdm': 'N253512', 'layout': 'default', 'su': studentid}
     req = _request(
         session, 'GET', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html', params=params)
+    xkkz_id = {}
+    xkkz = re.findall(
+        r'\'(.*?)\',\'(.*?)\'\)" role="tab" data-toggle="tab">', req)
+    for i in xkkz:
+        xkkz_id[i[0]] = i[1]
+
     njdm_id = re_search(r'id="njdm_id" value="(.*?)"/>', req)
     zyh_id = re_search(r'id="zyh_id" value="(.*?)"/>', req)
-    return {'njdm_id': njdm_id, 'zyh_id': zyh_id}
+    return {'xkkz_id': xkkz_id, 'njdm_id': njdm_id, 'zyh_id': zyh_id}
 
 
-def elect_class(session, studentid, params, xkkzid, classid):
+def elect_class(session, studentid, params, classtype, classid):
     """Elect class.
 
     Directly elect class.
@@ -83,14 +91,16 @@ def elect_class(session, studentid, params, xkkzid, classid):
         session: requests session, login session.
         studentid: str, student id.
         params: dict, get_params returned
-        xkkzid: str, 32 length id
+        classtype: str, class type
         classid: str, class id
 
     Returns:
-        int, -1 for param error, 0 for success, 1 for time conflict, 2 for full, 3 for param error, 4 for other.
+        int, 0 for success, 1 for time conflict, 2 for full, 3 for param error, 4 for other.
     """
+    if classtype not in params['xkkz_id']:
+        return 3
     post_params = {'gnmkdm': 'N253512', 'su': studentid}
-    data = {'jxb_ids': classid, 'xkkz_id': xkkzid,
+    data = {'jxb_ids': classid, 'xkkz_id': params['xkkz_id'][classtype],
             'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id']}
 
     req = _request(

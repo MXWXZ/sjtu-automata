@@ -7,11 +7,13 @@ from click import echo, secho
 import threading
 
 sys.path.append('../')
+
+from sjtu_automata import check_update, echoerror, echoinfo, echowarning
+from sjtu_automata.__version__ import __author__, __url__, __version__
+from sjtu_automata.credential import login
 from sjtu_automata.electsys.automata import (
     get_studentid, get_params, elect_class)
-from sjtu_automata.credential import login
-from sjtu_automata.__version__ import __author__, __url__, __version__
-from sjtu_automata import check_update, echoerror, echoinfo, echowarning
+
 
 class UserInterface(object):
     def __init__(self):
@@ -60,10 +62,10 @@ class UserInterface(object):
         echoinfo('Login successful!')
         return True
 
-    def __elect_thread(self, tid, xkkzid, classid, delay):
+    def __elect_thread(self, tid, classtype, classid, delay):
         while self.status[tid] == 2 or self.status[tid] == 4 or self.status[tid] == -1:
             ret = elect_class(self.session, self.studentid,
-                              self.params, xkkzid, classid)
+                              self.params, classtype, classid)
             with self.tl[tid]:
                 if self.status[tid] != 0 and self.status[tid] != 1 and self.status[tid] != 3:
                     self.status[tid] = ret
@@ -72,10 +74,10 @@ class UserInterface(object):
                         break
             sleep(delay)
 
-    def add_elect(self, number, xkkzid, classid, delay):
+    def add_elect(self, number, classtype, classid, delay):
         for i in range(number):
             self.tp.append(threading.Thread(
-                target=self.__elect_thread, args=(self.id, xkkzid, classid, delay,)))
+                target=self.__elect_thread, args=(self.id, classtype, classid, delay,)))
         self.tl.append(threading.Lock())
         self.tclass.append(classid)
         self.status.append(-1)
@@ -90,22 +92,22 @@ class UserInterface(object):
     def __parse_status(self, tid, status):
         with self.glock:
             if status == -1:
-                secho('['+self.tclass[tid]+'] ', fg='red', nl=False)
+                secho('[' + self.tclass[tid] + '] ', fg='red', nl=False)
                 echo('Not started!')
             elif status == 0:
-                secho('['+self.tclass[tid]+'] ', fg='green', nl=False)
+                secho('[' + self.tclass[tid] + '] ', fg='green', nl=False)
                 echo('Finished!')
             elif status == 1:
-                secho('['+self.tclass[tid]+'] ', fg='red', nl=False)
+                secho('[' + self.tclass[tid] + '] ', fg='red', nl=False)
                 echo('Time conflict! Stopped.')
             elif status == 2:
-                secho('['+self.tclass[tid]+'] ', fg='yellow', nl=False)
+                secho('[' + self.tclass[tid] + '] ', fg='yellow', nl=False)
                 echo('Class is full! Retrying...')
             elif status == 3:
-                secho('['+self.tclass[tid]+'] ', fg='red', nl=False)
+                secho('[' + self.tclass[tid] + '] ', fg='red', nl=False)
                 echo('Param error! Stopped.')
             elif status == 4:
-                secho('['+self.tclass[tid]+'] ', fg='yellow', nl=False)
+                secho('[' + self.tclass[tid] + '] ', fg='yellow', nl=False)
                 echo('Unknown error! Retrying...')
 
     def fetch_status(self):
@@ -130,8 +132,8 @@ def print_version(ctx, param, value):
     # override click version print
     if not value or ctx.resilient_parsing:
         return
-    echo('AutoElect by '+__author__)
-    echo('Version: '+__version__)
+    echo('AutoElect by ' + __author__)
+    echo('Version: ' + __version__)
     ctx.exit()
 
 # TODO: Add more command
@@ -153,9 +155,9 @@ def print_version(ctx, param, value):
 @click.argument('classtypeid', required=True, nargs=-1)
 def cli(no_update, ocr, print_cookie, delay, check_delay, number, classtypeid):
     version = __version__
-    echo('AutoElect by '+__author__)
-    echo('Version: '+version)
-    echo('Github: '+__url__+'\n')
+    echo('AutoElect by ' + __author__)
+    echo('Version: ' + version)
+    echo('Github: ' + __url__ + '\n')
 
     # TODO: remove in 1.0.0
     if not no_update and check_update():
@@ -174,10 +176,7 @@ def cli(no_update, ocr, print_cookie, delay, check_delay, number, classtypeid):
     if print_cookie:
         ui.print_cookie()
     for i in range(0, len(classtypeid), 2):
-        if len(classtypeid[i]) != 32:
-            echowarning('Class type ' + classtypeid[i] + ' invalid! Ignore.')
-            continue
-        ui.add_elect(number, classtypeid[i], classtypeid[i+1], delay)
+        ui.add_elect(number, classtypeid[i], classtypeid[i + 1], delay)
     ui.start_elect()
     cmd = threading.Thread(target=ui.get_input)
     cmd.daemon = True

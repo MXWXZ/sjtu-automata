@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         sjtu-automata
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  show classid under classname.
 // @author       MXWXZ
 // @match        *://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html*
@@ -62,18 +62,20 @@ function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelect
     waitForKeyElements.controlObj = controlObj;
 }
 
-function showid(node){
-    let id=node.children().children()[0].innerHTML;
-    node.children('.jxbmc').append('<p>'+id+'</p>');
+function showid(node) {
+    let id = node.children().children()[0].innerHTML;
+    node.children('.jxbmc').append('<p>' + id + '</p>');
 }
 
-(function() {
+(function () {
     'use strict';
 
-    let node=$('.nav.nav-tabs.sl_nav_tabs li');
-    node.each(function(){
-        let str=$(this).children('a')[0].getAttribute("onclick");
-        $(this).append('<p>'+str.substr(str.indexOf("','")+3,32)+' &nbsp;</p>');
+    let node = $('.nav.nav-tabs.sl_nav_tabs li');
+    node.each(function () {
+        let str = $(this).children('a')[0].getAttribute("onclick");
+        let pos1 = str.indexOf("this,'");
+        let pos2 = str.indexOf("','");
+        $(this).append('<p>' + str.substr(str.indexOf("this,'") + 6, pos2 - pos1 - 6) + ' &nbsp;</p>');
     });
     waitForKeyElements('.body_tr', showid, false);
 })();

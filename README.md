@@ -12,7 +12,7 @@ V2协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20
 :heavy_check_mark: 卡时间准时抢课
 
 ## 使用脚本你不能做到
-:x: 违反选课规则选课\
+~~:x: 违反选课规则选课(0day fucked)~~\
 :x: 提高您的网速\
 :x: 保证一定可以抢到课
 

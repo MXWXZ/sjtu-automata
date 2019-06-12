@@ -101,7 +101,7 @@ def elect_class(session, studentid, params, classtype, classid):
         return 3
     post_params = {'gnmkdm': 'N253512', 'su': studentid}
     data = {'jxb_ids': classid, 'xkkz_id': params['xkkz_id'][classtype],
-            'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id']}
+            'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id'], 'sxbj': 1}
 
     req = _request(
         session, 'POST', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html', params=post_params, data=data)

@@ -48,7 +48,7 @@ def get_studentid(session):
     """
     params = {'jsdm': '', '_t': get_timestamp()}
     req = _request(
-        session, 'GET', 'http://i.sjtu.edu.cn/xtgl/index_initMenu.html', params=params)
+        session, 'GET', 'https://i.sjtu.edu.cn/xtgl/index_initMenu.html', params=params)
     return re_search(r'sessionUserKey" value="(.*?)"', req)
 
 
@@ -69,10 +69,10 @@ def get_params(session, studentid):
     """
     params = {'gnmkdm': 'N253512', 'layout': 'default', 'su': studentid}
     req = _request(
-        session, 'GET', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html', params=params)
+        session, 'GET', 'https://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html', params=params)
     xkkz_id = {}
     xkkz = re.findall(
-        r'\'(.*?)\',\'(.*?)\'\)" role="tab" data-toggle="tab">', req)
+        r'\'(.*?)\',\'(.*?)\',\'.*?\',\'.*?\'\)" role="tab" data-toggle="tab">', req)
     for i in xkkz:
         xkkz_id[i[0]] = i[1]
 
@@ -81,7 +81,7 @@ def get_params(session, studentid):
     return {'xkkz_id': xkkz_id, 'njdm_id': njdm_id, 'zyh_id': zyh_id}
 
 
-def elect_class(session, studentid, params, classtype, classid):
+def elect_class(session, studentid, params, classtype, classid, jxbid):
     """Elect class.
 
     Directly elect class.
@@ -93,6 +93,7 @@ def elect_class(session, studentid, params, classtype, classid):
         params: dict, get_params returned
         classtype: str, class type
         classid: str, class id
+        jxbid: str, jxb id
 
     Returns:
         int, 0 for success, 1 for time conflict, 2 for full, 3 for param error, 4 for other.
@@ -100,11 +101,11 @@ def elect_class(session, studentid, params, classtype, classid):
     if classtype not in params['xkkz_id']:
         return 3
     post_params = {'gnmkdm': 'N253512', 'su': studentid}
-    data = {'jxb_ids': classid, 'xkkz_id': params['xkkz_id'][classtype],
-            'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id'], 'sxbj': 1}
+    data = {'kch_id': classid, 'jxb_ids': jxbid, 'xkkz_id': params['xkkz_id'][classtype],
+            'njdm_id': params['njdm_id'], 'zyh_id': params['zyh_id'], 'sxbj': 1, 'qz': 0}
 
     req = _request(
-        session, 'POST', 'http://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html', params=post_params, data=data)
+        session, 'POST', 'https://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html', params=post_params, data=data)
 
     if '{"flag":"1"}' in req:
         return 0

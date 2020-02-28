@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         sjtu-automata
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  show classid under classname.
 // @author       MXWXZ
 // @match        *://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html*
@@ -64,8 +64,7 @@ function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelect
 }
 
 function showid(node) {
-    let id = node.children().children()[0].innerHTML;
-    node.children('.jxbmc').append('<p>' + id + '</p>');
+    node.children('.jxbmc').append('<br><button type="button" class="btn btn-primary btn-sm" onclick="copyid(this)">复制ID</button>');
 }
 
 function showid2(node) {
@@ -76,6 +75,11 @@ function showid2(node) {
     'use strict';
 
     if (location.href.indexOf("zzxkyzb_cxZzxkYzbIndex") > -1) {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.appendChild(document.createTextNode("function copyid(t) {const el = document.createElement('textarea');el.value =t.parentNode.parentNode.childNodes[2].innerHTML+' '+t.parentNode.parentNode.childNodes[1].innerHTML;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);alert(\"copy ok\");}"));
+        document.body.appendChild(script);
+
         let node = $('.nav.nav-tabs.sl_nav_tabs li');
         node.each(function () {
             let str = $(this).children('a')[0].getAttribute("onclick");
@@ -84,7 +88,10 @@ function showid2(node) {
             $(this).append('<p>' + str.substr(str.indexOf("this,'") + 6, pos2 - pos1 - 6) + ' &nbsp;</p>');
         });
         waitForKeyElements('.body_tr', showid, false);
-    } else if(location.href.indexOf("viewFunc_cxDesignFuncPageIndex") > -1) {
+    }
+    /*
+    To be fix
+    else if(location.href.indexOf("viewFunc_cxDesignFuncPageIndex") > -1) {
         $('[id$=_jxb_id]').show();
         $('[id$=_jxb_id]').css('width','270px');
         let row=$('.jqgfirstrow').children('td:eq(1)');
@@ -92,4 +99,5 @@ function showid2(node) {
         row.css('width','270px');
         waitForKeyElements("[aria-describedby$='_jxb_id']", showid2, false);
     }
+    */
 })();

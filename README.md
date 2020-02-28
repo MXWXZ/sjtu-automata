@@ -1,7 +1,10 @@
 # sjtu-automata
-![Version](https://img.shields.io/badge/Version-0.3.2-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
+![Version](https://img.shields.io/badge/Version-0.4.0-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
 
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
+
+**由于教务系统更新，v0.4.0为临时解决版本，周末会优化用户体验**
+**v0.4.0更新：教务系统限制大约在30-60分钟左右可能需要重新登陆，暂时未解决，待周末重构。**
 
 上海交通大学抢课脚本\
 V2协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20analysis%20v2.md>
@@ -45,13 +48,13 @@ Ubuntu 18.04：
 - 插件安装完成后点击这里进入脚本安装页面：https://github.com/MXWXZ/sjtu-automata/raw/master/sjtu-automata.user.js
 - 下面的教程以安装插件之后为准，如果不安装油猴脚本也可以自行查看网页源码提取相关ID
 
-1. 查看课号：想选的课“教学班”第二行的32位字符串即为唯一课号
+1. 查看课程号和教学班：想选的课“教学班”第二行点击复制ID即可复制课号+教学班号
 2. 查看课程类型：标签页第二行的字符串即为课程类型
-3. 使用命令选课，格式为`autoelect [课程类型ID] [32位课号ID]`：
+3. 使用命令选课，格式为`autoelect [课程类型ID] [课程号ID] [256位教学班ID]`：
 
-        autoelect 01 BCDEFGHIJKLMNOPQRSTUVWXYZ1234567 10 DEFGHIJKLMNOPQRSTUVWXYZ123456789
+        autoelect 01 AAAA... aaaa... 10 BBBB bbbb...
 
-    上述命令将会选`01`课程类型下的`BCDEFGHIJKLMNOPQRSTUVWXYZ1234567`课和`10`课程类型下的`DEFGHIJKLMNOPQRSTUVWXYZ123456789`课，如果需要更多可以在后面继续添加。
+    上述命令将会选`01`课程类型下的`AAAA`课的`aaaa`（省略256位）教学班和`10`课程类型下的`BBBB`课的`bbbb`（省略256位）课，如果需要更多可以在后面继续添加。
 
     注：程序运行过程中输入`s`可以查看选课状态
 
@@ -63,7 +66,7 @@ Ubuntu 18.04：
 
 ## 参数说明
 ### CLI
-使用：`autoelect [OPTIONS] [CLASSTYPE-CLASSID]`
+使用：`autoelect [OPTIONS] [CLASSTYPE-CLASSID-JXBID]`
 
 | 参数  |   长参数形式   |              说明              |
 | :---: | :------------: | :----------------------------: |
@@ -76,6 +79,7 @@ Ubuntu 18.04：
 |  -n   |    --number    |  每个课程的线程数（默认为1）   |
 |  -h   |     --help     |            显示帮助            |
 
-- `CLASSTYPE`和`CLASSID`成对出现，可以出现多对同步进行，但至少有一对
-- `CLASSTYPE`：32位课程类型ID
+- `CLASSTYPE`、``CLASSID`、`JXBID`成组出现，可以出现多组同步进行，但至少有一组
+- `CLASSTYPE`：2位课程类型
 - `CLASSID`：课号ID
+- `JXBID`：256位教学班ID

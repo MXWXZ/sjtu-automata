@@ -46,12 +46,12 @@ Jaccount 登陆&选课协议分析 V2
 - **V2版选课系统很不错，不像V1版的反人类，可以直接向系统提交选课了，且容错性挺强，妈妈再也不用担心我一步一步模拟人类操作啦~**
 
 ### 登陆
-地址：`http://i.sjtu.edu.cn/jaccountlogin`\
+地址：`https://i.sjtu.edu.cn/jaccountlogin`\
 返回：302重定向
 - 多次302跳转到Jaccount认证
 
 ### 主界面
-地址：`http://i.sjtu.edu.cn/xtgl/index_initMenu.html?jsdm=&_t=xxx`\
+地址：`https://i.sjtu.edu.cn/xtgl/index_initMenu.html?jsdm=&_t=xxx`\
 参数：
 - `jsdm`：未知参数，不加似乎无影响
 - `_t`：应该是时间戳，不加似乎无影响
@@ -63,26 +63,28 @@ Jaccount 登陆&选课协议分析 V2
 V2版采用AJAX无刷新技术，比之前不知道高到哪里去了，因此除了汉语拼音命名让人不知所云外分析较为方便。
 
 #### 无关紧要的界面元素
-- 主界面：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html?gnmkdm=N253512&layout=default&su=xxx`
-- 课程显示：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbDisplay.html?gnmkdm=N253512&su=xxx`
-- 已选信息：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbChoosed.html?gnmkdm=N253512&su=xxx`
+- 主界面：`https://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbIndex.html?gnmkdm=N253512&layout=default&su=xxx`
+- 课程显示：`https://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbDisplay.html?gnmkdm=N253512&su=xxx`
+- 已选信息：`https://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbChoosed.html?gnmkdm=N253512&su=xxx`
 
 GET参数：
 - `gnmkdm`：菜单栏选项，`N253512`即为选课。
 - `su`：学号
 
 #### 搜索接口
-地址：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbPartDisplay.html?gnmkdm=N253512&su=xxx`
+地址：`https://i.sjtu.edu.cn/xsxk/zzxkyzb_cxZzxkYzbPartDisplay.html?gnmkdm=N253512&su=xxx`
 
 POST参数：\
 太多了不想列举了，没啥卵用。
 
 #### 选课接口
-地址：`http://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html?gnmkdm=N253512&su=xxx`\
+地址：`https://i.sjtu.edu.cn/xsxk/zzxkyzb_xkBcZyZzxkYzb.html?gnmkdm=N253512&su=xxx`\
 必须参数（经过测试可以省略的就不写了）：
-- `jxb_ids`：32位课号ID
+- `kch_id`：课程号ID
+- `jxb_ids`：256位课号ID，似乎是实时获取的
 - `xkkz_id`：未知ID，和选课轮数有关，同一轮，同一课程类型为定值。
 - `sxbj`：未知定值1(是否已选上?)
+- `qz`：未知定值0
 - `njdm_id`：年级级数。
 - `zyh_id`：专业号ID。
 

@@ -99,7 +99,7 @@ def login(url, useocr=False):
                 sleep(3)
                 continue
             captcha_id += get_timestamp()
-            captcha_url = 'https://jaccount.sjtu.edu.cn/jaccount/captcha?'+captcha_id
+            captcha_url = 'https://jaccount.sjtu.edu.cn/jaccount/captcha?' + captcha_id
             code = _bypass_captcha(session, captcha_url, useocr)
 
             sid = re_search(r'sid" value="(.*?)"', req)

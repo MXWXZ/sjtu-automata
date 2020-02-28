@@ -45,7 +45,7 @@ class UserInterface(object):
         """
         echoinfo('Login to your JAccount:')
         self.session = login(
-            'http://i.sjtu.edu.cn/jaccountlogin', ocr)
+            'https://i.sjtu.edu.cn/jaccountlogin', ocr)
 
         self.studentid = get_studentid(self.session)
         if not self.studentid:
@@ -62,10 +62,10 @@ class UserInterface(object):
         echoinfo('Login successful!')
         return True
 
-    def __elect_thread(self, tid, classtype, classid, delay):
+    def __elect_thread(self, tid, classtype, classid, jxbid, delay):
         while self.status[tid] == 2 or self.status[tid] == 4 or self.status[tid] == -1:
             ret = elect_class(self.session, self.studentid,
-                              self.params, classtype, classid)
+                              self.params, classtype, classid, jxbid)
             with self.tl[tid]:
                 if self.status[tid] != 0 and self.status[tid] != 1 and self.status[tid] != 3:
                     self.status[tid] = ret
@@ -74,10 +74,10 @@ class UserInterface(object):
                         break
             sleep(delay)
 
-    def add_elect(self, number, classtype, classid, delay):
+    def add_elect(self, number, classtype, classid, jxbid, delay):
         for i in range(number):
             self.tp.append(threading.Thread(
-                target=self.__elect_thread, args=(self.id, classtype, classid, delay,)))
+                target=self.__elect_thread, args=(self.id, classtype, classid, jxbid, delay,)))
         self.tl.append(threading.Lock())
         self.tclass.append(classid)
         self.status.append(-1)
@@ -88,6 +88,7 @@ class UserInterface(object):
         for i in self.tp:
             i.daemon = True
             i.start()
+        echoinfo('Task running! Input "s" to view status.')
 
     def __parse_status(self, tid, status):
         with self.glock:
@@ -166,7 +167,7 @@ def cli(no_update, ocr, print_cookie, delay, check_delay, number, classtypeid):
             exit()
 
     # check argument
-    if len(classtypeid) % 2 != 0:
+    if len(classtypeid) % 3 != 0:
         echoerror('CLASSTYPE and CLASSID should in pair!')
         exit()
 
@@ -175,8 +176,9 @@ def cli(no_update, ocr, print_cookie, delay, check_delay, number, classtypeid):
         exit()
     if print_cookie:
         ui.print_cookie()
-    for i in range(0, len(classtypeid), 2):
-        ui.add_elect(number, classtypeid[i], classtypeid[i + 1], delay)
+    for i in range(0, len(classtypeid), 3):
+        ui.add_elect(
+            number, classtypeid[i], classtypeid[i + 1], classtypeid[i + 2], delay)
     ui.start_elect()
     cmd = threading.Thread(target=ui.get_input)
     cmd.daemon = True

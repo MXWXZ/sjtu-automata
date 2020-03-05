@@ -4,6 +4,7 @@
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
 **由于教务系统更新，v0.4.0为临时解决版本，周末会优化用户体验**
+
 **v0.4.0更新：教务系统限制大约在30-60分钟左右可能需要重新登陆，暂时未解决，待周末重构。**
 
 上海交通大学抢课脚本\
@@ -79,7 +80,7 @@ Ubuntu 18.04：
 |  -n   |    --number    |  每个课程的线程数（默认为1）   |
 |  -h   |     --help     |            显示帮助            |
 
-- `CLASSTYPE`、``CLASSID`、`JXBID`成组出现，可以出现多组同步进行，但至少有一组
+- `CLASSTYPE`、`CLASSID`、`JXBID`成组出现，可以出现多组同步进行，但至少有一组
 - `CLASSTYPE`：2位课程类型
 - `CLASSID`：课号ID
 - `JXBID`：256位教学班ID

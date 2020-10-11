@@ -21,9 +21,9 @@ V2协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20
 :x: 保证一定可以抢到课
 
 ## 系统环境测试程度
-最佳支持：Manjaro with python 3.7.3 / Ubuntu 18.04 LTS with Python 3.6.7
+最佳支持：Manjaro with python 3.7.3 / Ubuntu 18.04 LTS with Python 3.6.7 / macOS with Python 3.8.2
 
-Linux > Windows >> ~~macOS=0（没钱无测试）~~
+Linux > macOS > Windows
 
 ## 安装
     
@@ -41,6 +41,10 @@ Arch系安装下面两个包：`tesseract`、`tesseract-data-eng`
 Ubuntu 18.04：
 
     sudo apt install tesseract-ocr libtesseract-dev
+    
+macOS
+
+    brew install tesseract
 
 其他版本/发行版/Windows等自行看文档：https://github.com/tesseract-ocr/tesseract/wiki
     

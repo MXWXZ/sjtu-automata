@@ -1,11 +1,10 @@
 # sjtu-automata
 ![Version](https://img.shields.io/badge/Version-0.4.0-blue.svg) ![Language](https://img.shields.io/badge/Language-Python3-red.svg) ![License](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)
+## 寻求维护者：由于本人即将离开毕业，本仓库相关维护工作将无法进行，现寻求新一届维护者，如有兴趣欢迎联系！
 
 **注意！此版本为BETA版，未经过严格测试，可能存在BUG，如有问题请提交[issue](https://github.com/MXWXZ/AutoElect/issues)**
 
-**由于教务系统更新，v0.4.0为临时解决版本，周末会优化用户体验**
-
-**v0.4.0更新：教务系统限制大约在30-60分钟左右可能需要重新登陆，暂时未解决，待周末重构。**
+**v0.4.0更新：教务系统限制大约在30-60分钟左右可能需要重新登陆。**
 
 上海交通大学抢课脚本\
 V2协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20analysis%20v2.md>

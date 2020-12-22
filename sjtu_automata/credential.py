@@ -40,7 +40,7 @@ def _bypass_captcha(session, url, useocr):
         f.write(captcha.content)
 
     if useocr:
-        code = autocaptcha('captcha.jpeg')
+        code = autocaptcha('captcha.jpeg').strip()
         if not code.isalpha():
             code = '1234'   # cant recongnize, go for next round
     else:

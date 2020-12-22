@@ -5,3 +5,5 @@ __pycache__/
 /dist
 /sjtu_automata.egg-info
 /.vscode
+.idea/
+.DS_Store

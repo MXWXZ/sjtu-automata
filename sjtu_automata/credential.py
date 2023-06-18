@@ -15,6 +15,7 @@ from sjtu_automata.utils.exceptions import (RetryRequest, AutomataError)
 
 def _create_session():
     session = requests.Session()
+    session.headers = {'Referer':'https://jaccount.sjtu.edu.cn'}
     session.mount('http://', HTTPAdapter(max_retries=3))
     session.mount('https://', HTTPAdapter(max_retries=3))
     # session.verify = False    # WARNING! Only use it in Debug mode!

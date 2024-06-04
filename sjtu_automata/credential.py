@@ -27,7 +27,7 @@ def _get_login_page(session, url):
     # return page text
     req = session.get(url)
     # if last login exists, it will go to error page. so ignore it
-    if '<form id="form-input" method="post" action="ulogin">' in req.text:
+    if '<div id="login-form">' in req.text:
         return req.text
     else:
         raise RetryRequest  # make it retry
@@ -103,10 +103,10 @@ def login(url, useocr=False):
             captcha_url = 'https://jaccount.sjtu.edu.cn/jaccount/captcha?' + captcha_id
             code = _bypass_captcha(session, captcha_url, useocr)
 
-            sid = re_search(r'sid" value="(.*?)"', req)
-            returl = re_search(r'returl" value="(.*?)"', req)
-            se = re_search(r'se" value="(.*?)"', req)
-            client = re_search(r'client" value="(.*?)"', req)
+            sid = re_search(r'sid: "(.*?)"', req)
+            returl = re_search(r'returl:"(.*?)"', req)
+            se = re_search(r'se: "(.*?)"', req)
+            client = re_search(r'client: "(.*?)"', req)
             uuid = re_search(r'captcha\?uuid=(.*?)&t=', req)
             if not (sid and returl and se and uuid):
                 print('Params not found! Retrying...')

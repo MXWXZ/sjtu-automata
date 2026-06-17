@@ -1,5 +1,7 @@
 import setuptools
-from sjtu_automata.__version__ import __title__, __description__, __url__, __version__, __author__, __author_email__, __license__
+
+with open('sjtu_automata/__version__.py') as fp:
+    exec(fp.read())
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()

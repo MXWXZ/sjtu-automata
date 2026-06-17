@@ -30,7 +30,7 @@ Linux > macOS > Windows
 pip3 install requests
 ```
 2. 从 GitHub 拉取最新修复版:
-'''Bash
+```Bash
 pip3 install git+[https://github.com/MXWXZ/sjtu-automata.git](https://github.com/MXWXZ/sjtu-automata.git) --upgrade --no-build-isolation
 ```
 

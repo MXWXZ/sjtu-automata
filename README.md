@@ -25,12 +25,14 @@ V2协议分析：<https://github.com/MXWXZ/sjtu-automata/blob/master/Protocol%20
 Linux > macOS > Windows
 
 ## 安装
-    
-    pip3 install sjtu-automata
-
-## 升级
-
-    pip3 install sjtu-automata --upgrade
+1. 请先手动安装必备的网络请求库：
+```Bash
+pip3 install requests
+```
+2. 从 GitHub 拉取最新修复版:
+'''Bash
+pip3 install git+[https://github.com/MXWXZ/sjtu-automata.git](https://github.com/MXWXZ/sjtu-automata.git) --upgrade --no-build-isolation
+```
 
 ### [可选]验证码自动识别
 Windows可以不装，Linux如无图形界面且无法通过其他方式打开`captcha.jpeg`文件需要安装。
@@ -47,20 +49,25 @@ macOS
 
 其他版本/发行版/Windows等自行看文档：https://github.com/tesseract-ocr/tesseract/wiki
     
-## 简单使用说明
+## 简单使用说明 & 避坑指南
+
+**注意：目前 pip 仓库的 0.4.0 版本已失效。请下载本仓库最新源码，并在本地运行！**
+
 - 由于选课系统再次更新，需要传递的参数改变，因此建议使用油猴脚本获取ID：https://www.tampermonkey.net/
 - 插件安装完成后点击这里进入脚本安装页面：https://github.com/MXWXZ/sjtu-automata/raw/master/sjtu-automata.user.js
 - 下面的教程以安装插件之后为准，如果不安装油猴脚本也可以自行查看网页源码提取相关ID
 
 1. 查看课程号和教学班：想选的课“教学班”第二行点击复制ID即可复制课号+教学班号
 2. 查看课程类型：标签页第二行的字符串即为课程类型
-3. 使用命令选课，格式为`autoelect [课程类型ID] [课程号ID] [256位教学班ID]`：
+3. 终端进入源码目录后，使用命令选课，格式为 `python3 autoelect.py [选项] [课程类型ID] [课程号ID] [256位教学班ID]`：
 
-        autoelect 01 AAAA... aaaa... 10 BBBB bbbb...
+        python3 autoelect.py 01 AAAA... aaaa... 10 BBBB bbbb...
 
     上述命令将会选`01`课程类型下的`AAAA`课的`aaaa`（省略256位）教学班和`10`课程类型下的`BBBB`课的`bbbb`（省略256位）课，如果需要更多可以在后面继续添加。
 
-    注：程序运行过程中输入`s`可以查看选课状态
+    注：程序运行过程中输入`s`可以查看选课状态。如需全自动识别验证码，请在命令中加上 `-o` 参数。
+
+输入密码后卡死/出现 NotOpenSSLWarning：Mac 系统 SSL 冲突，终端运行 `pip3 install "urllib3<2"` 即可解决。
 
 ## 抢课说明
 - **本程序所有操作均保证当前课程不会减少，即无论你是否已经选上课、无论是否人满等各种情况都不会影响已选课程。换言之，无论何时均保证课程只多不少，重复提交不会影响当前课表。**
